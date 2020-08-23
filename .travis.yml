@@ -1,0 +1,31 @@
+language: go
+
+go:
+  - 1.13.x
+
+install:
+  - go get golang.org/x/tools/cmd/cover
+  - go get github.com/mattn/goveralls
+  - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.6
+
+script:
+  - go test ./... -v -covermode=count -coverprofile=coverage.out
+  - cat coverage.out | grep -v "printracer.go" > cover.out
+  - goveralls -coverprofile=cover.out -service=travis-ci
+  - golangci-lint run
+
+  - CGO_ENABLED=0 GOARCH=386 GOOS=linux go build -o out/printracer_linux_i686 .
+  - CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o out/printracer_linux_x86-64 .
+  - GOARCH=amd64 GOOS=darwin go build -o out/printracer_osx .
+  - GOARCH=386 GOOS=windows go build -o out/printracer_win32.exe .
+  - GOARCH=amd64 GOOS=windows go build -o out/printracer_win64.exe .
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "I0rhQGOIZs1mW87o/72zq2eTo6Iqsl/GXh/M51GDXoatkpHYI2lyBKkIKhOJztl91nPFxBMX+p401lf8zFQR1tZprps2fsoMnA33ia3vIW+fkueUBrdhL7zWiXwRh0ASN1MYRMkrhsHRuO8rmhUNw7jls1HXA4sZhQOD6H8GFfA53d0a+9n5Xif8eZGLgjQ9rZGVm7KyHP2PL9oJVcb7PE7JkZ8DsrdZscY+PFeWRjov8oFu48QmccXZqUwTyJ6qx+ycVYZoEtTs/cGnoqCMhx1Q2DuOxzLex52dudIxCBxk9bV7d609xY3zxcOeHqdv4QNVNqfaQlc/W2jqAvHC0x78IVN8CKWBzGYM8vHWR+JFBbRDWdDa++KeUTS1OcfRSRMUChF3WxjNZWGQ04u8zQ/75Z6ar4Q2bePAoC66tkrUVVye40SToYuT4fNezEITFdFNcFvBQIrI9zVhdwlpQ81lxToeQXHNDJ7nyAGkz5CMlHbTW7jbHYPUvm4WixqgFoRQjrZ13eQ6Aj66WXe6EPPSjMORDNhHRYc1S1q51Ru1qSD8lSi+anNOMKnSF3sURMgPeE6oeFr8OtPwoWxTZS07IMsYlcQIETTNvoajH5gqe0XY7tTMPVBOhyg+werpss2FkYfwOPBIpKAO6XvRPMR3fyoju15l0n5A7kNipVU="
+  file_glob: true
+  file: out/*
+  skip_cleanup: true
+  on:
+    tags: true
