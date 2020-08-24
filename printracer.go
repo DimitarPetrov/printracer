@@ -14,7 +14,7 @@ const revert = "revert"
 
 func init() {
 	flag.Usage = func() {
-		// TODO: Add a brief explaination
+		fmt.Fprintln(os.Stdout, `printracer instruments all go code in the current working directory to print every function execution along with its arguments.`)
 		fmt.Fprintf(os.Stdout, "Usage: printracer [%s/%s]\n", apply, revert)
 		flag.PrintDefaults()
 	}
@@ -38,7 +38,11 @@ func main() {
 			if info.IsDir() {
 				switch operation {
 				case apply:
-					return tracing.InstrumentDirectory(path)
+					err := tracing.InstrumentDirectory(path)
+					if err != nil {
+						return err
+					}
+					return tracing.RemoveUnusedImportFromDirectory(path, "fmt")
 				case revert:
 					err := tracing.DeinstrumentDirectory(path)
 					if err != nil {

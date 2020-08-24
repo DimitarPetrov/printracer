@@ -65,7 +65,7 @@ func InstrumentFile(fset *token.FileSet, file *ast.File, out io.Writer) error {
 				enteringStringFormat += " with args"
 
 				for _, param := range t.Type.Params.List {
-					enteringStringFormat += " %v"
+					enteringStringFormat += " (%v)"
 					args = append(args, &dst.BasicLit{
 						Kind:  token.STRING,
 						Value: param.Names[0].Name,

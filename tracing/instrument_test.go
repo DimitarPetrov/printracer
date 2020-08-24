@@ -29,7 +29,7 @@ const resultCodeWithoutImports = `package a
 import "fmt"
 
 func test(i int, b bool) int {
-	fmt.Printf("Entering function test with args %v %v\n", i, b)
+	fmt.Printf("Entering function test with args (%v) (%v)\n", i, b)
 	defer fmt.Printf("Exiting function test\n")
 	if b {
 		return i
@@ -65,7 +65,7 @@ const resultCodeWithFmtImport = `package a
 import "fmt"
 
 func test(i int, b bool) int {
-	fmt.Printf("Entering function test with args %v %v\n", i, b)
+	fmt.Printf("Entering function test with args (%v) (%v)\n", i, b)
 	defer fmt.Printf("Exiting function test\n")
 	if b {
 		return i
@@ -109,7 +109,7 @@ import (
 )
 
 func test(i int, b bool) int {
-	fmt.Printf("Entering function test with args %v %v\n", i, b)
+	fmt.Printf("Entering function test with args (%v) (%v)\n", i, b)
 	defer fmt.Printf("Exiting function test\n")
 	if b {
 		return i
@@ -152,7 +152,7 @@ import (
 )
 
 func test(i int, b bool) int {
-	fmt.Printf("Entering function test with args %v %v\n", i, b)
+	fmt.Printf("Entering function test with args (%v) (%v)\n", i, b)
 	defer fmt.Printf("Exiting function test\n")
 	if b {
 		return i
