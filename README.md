@@ -14,6 +14,7 @@
 ```
 go get -u github.com/DimitarPetrov/printracer
 ```
+Or you can download a binary for your system [here](https://github.com/DimitarPetrov/printracer/releases).
 
 ## Demonstration
 
