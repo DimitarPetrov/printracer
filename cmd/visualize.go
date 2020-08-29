@@ -30,11 +30,11 @@ func NewVisualizeCmd(parser parser.Parser, visualizer vis.Visualizer) *Visualize
 
 func (vc *VisualizeCmd) Prepare() *cobra.Command {
 	result := &cobra.Command{
-		Use:     "visualize",
-		Aliases: []string{"v"},
-		Short:   "Generates html sequence diagram of a given trace (file with output of already instrumented code).",
-		PreRunE: commonPreRunE(vc),
-		RunE:    commonRunE(vc),
+		Use:          "visualize",
+		Aliases:      []string{"v"},
+		Short:        "Generates html sequence diagram of a given trace (file with output of already instrumented code).",
+		PreRunE:      commonPreRunE(vc),
+		RunE:         commonRunE(vc),
 		SilenceUsage: true,
 	}
 

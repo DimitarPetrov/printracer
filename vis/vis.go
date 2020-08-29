@@ -138,13 +138,6 @@ func (s *stack) Empty() bool {
 	return s.Length() == 0
 }
 
-func (s *stack) Print() {
-	for _, event := range *s {
-		fmt.Printf(" %s ", event.FuncName())
-	}
-	fmt.Println()
-}
-
 type templateData struct {
 	Args     []string
 	Diagram  string

@@ -21,11 +21,11 @@ func NewRevertCmd(deinstrumenter tracing.CodeDeinstrumenter, importsGroomer trac
 
 func (rc *RevertCmd) Prepare() *cobra.Command {
 	return &cobra.Command{
-		Use:     "revert",
-		Aliases: []string{"r"},
-		Short:   "Reverts previously instrumented directory of go files",
-		PreRunE: commonPreRunE(rc),
-		RunE:    commonRunE(rc),
+		Use:          "revert",
+		Aliases:      []string{"r"},
+		Short:        "Reverts previously instrumented directory of go files",
+		PreRunE:      commonPreRunE(rc),
+		RunE:         commonRunE(rc),
 		SilenceUsage: true,
 	}
 }

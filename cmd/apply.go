@@ -21,11 +21,11 @@ func NewApplyCmd(instrumenter tracing.CodeInstrumenter, importsGroomer tracing.I
 
 func (ac *ApplyCmd) Prepare() *cobra.Command {
 	return &cobra.Command{
-		Use:     "apply",
-		Aliases: []string{"a"},
-		Short:   "Instruments a directory of go files",
-		PreRunE: commonPreRunE(ac),
-		RunE:    commonRunE(ac),
+		Use:          "apply",
+		Aliases:      []string{"a"},
+		Short:        "Instruments a directory of go files",
+		PreRunE:      commonPreRunE(ac),
+		RunE:         commonRunE(ac),
 		SilenceUsage: true,
 	}
 }
