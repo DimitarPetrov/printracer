@@ -70,35 +70,19 @@ var templateFuncs = &template.FuncMap{
 	},
 }
 
-type templateData struct {
-	Args     []string
-	Diagram  string
-	MetaJSON template.JS
+//go:generate counterfeiter . Visualizer
+type Visualizer interface {
+	Visualize(events []parser.FuncEvent, maxDepth int, startingFunc string, outputFile string) error
 }
 
-type sequenceDiagramData struct {
-	data  bytes.Buffer
-	count int
+type visualizer struct {
 }
 
-func (r *sequenceDiagramData) addFunctionInvocation(source string, target string) {
-	r.addRecord(source, "->", target)
+func NewVisualizer() Visualizer {
+	return &visualizer{}
 }
 
-func (r *sequenceDiagramData) addFunctionReturn(source string, target string) {
-	r.addRecord(source, "-->", target)
-}
-
-func (r *sequenceDiagramData) addRecord(source string, operation string, target string) {
-	r.count++
-	r.data.WriteString(fmt.Sprintf("%s%s%s: (%d)\n", source, operation, target, r.count))
-}
-
-func (r *sequenceDiagramData) String() string {
-	return r.data.String()
-}
-
-func Visualize(events []parser.FuncEvent, maxDepth int, startingFunc string, outputFile string) error {
+func (v *visualizer) Visualize(events []parser.FuncEvent, maxDepth int, startingFunc string, outputFile string) error {
 	tmpl, err := template.New("sequenceDiagram").
 		Funcs(*templateFuncs).
 		Parse(reportTemplate)
@@ -106,7 +90,7 @@ func Visualize(events []parser.FuncEvent, maxDepth int, startingFunc string, out
 		return fmt.Errorf("error parsing template: %v", err)
 	}
 
-	templateData, err := constructTemplateData(events, maxDepth, startingFunc)
+	templateData, err := v.constructTemplateData(events, maxDepth, startingFunc)
 	if err != nil {
 		return err
 	}
@@ -161,7 +145,35 @@ func (s *stack) Print() {
 	fmt.Println()
 }
 
-func constructTemplateData(events []parser.FuncEvent, maxDepth int, startingFunc string) (templateData, error) {
+type templateData struct {
+	Args     []string
+	Diagram  string
+	MetaJSON template.JS
+}
+
+type sequenceDiagramData struct {
+	data  bytes.Buffer
+	count int
+}
+
+func (r *sequenceDiagramData) addFunctionInvocation(source string, target string) {
+	r.addRecord(source, "->", target)
+}
+
+func (r *sequenceDiagramData) addFunctionReturn(source string, target string) {
+	r.addRecord(source, "-->", target)
+}
+
+func (r *sequenceDiagramData) addRecord(source string, operation string, target string) {
+	r.count++
+	r.data.WriteString(fmt.Sprintf("%s%s%s: (%d)\n", source, operation, target, r.count))
+}
+
+func (r *sequenceDiagramData) String() string {
+	return r.data.String()
+}
+
+func (v *visualizer) constructTemplateData(events []parser.FuncEvent, maxDepth int, startingFunc string) (templateData, error) {
 	diagramData := &sequenceDiagramData{}
 
 	if len(startingFunc) > 0 {

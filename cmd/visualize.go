@@ -11,6 +11,9 @@ import (
 )
 
 type VisualizeCmd struct {
+	parser     parser.Parser
+	visualizer vis.Visualizer
+
 	input io.Reader
 
 	outputFile   string
@@ -18,8 +21,11 @@ type VisualizeCmd struct {
 	startingFunc string
 }
 
-func NewVisualizeCmd() *VisualizeCmd {
-	return &VisualizeCmd{}
+func NewVisualizeCmd(parser parser.Parser, visualizer vis.Visualizer) *VisualizeCmd {
+	return &VisualizeCmd{
+		parser:     parser,
+		visualizer: visualizer,
+	}
 }
 
 func (vc *VisualizeCmd) Prepare() *cobra.Command {
@@ -29,6 +35,7 @@ func (vc *VisualizeCmd) Prepare() *cobra.Command {
 		Short:   "Generates html sequence diagram of a given trace (file with output of already instrumented code).",
 		PreRunE: commonPreRunE(vc),
 		RunE:    commonRunE(vc),
+		SilenceUsage: true,
 	}
 
 	result.Flags().StringVarP(&vc.outputFile, "output", "o", "calls", "name of the resulting html file when visualizing")
@@ -37,7 +44,7 @@ func (vc *VisualizeCmd) Prepare() *cobra.Command {
 	return result
 }
 
-func (vc *VisualizeCmd) Parse(args []string) error {
+func (vc *VisualizeCmd) Validate(args []string) error {
 	vc.input = os.Stdin
 	if len(args) > 0 {
 		f, err := os.Open(args[0])
@@ -50,12 +57,11 @@ func (vc *VisualizeCmd) Parse(args []string) error {
 }
 
 func (vc *VisualizeCmd) Run() error {
-	traceParser := parser.NewParser(vc.input)
-	events, err := traceParser.Parse()
+	events, err := vc.parser.Parse(vc.input)
 	if err != nil {
 		return fmt.Errorf("error while parsing input: %v", err)
 	}
-	if err := vis.Visualize(events, vc.maxDepth, vc.startingFunc, vc.outputFile); err != nil {
+	if err := vc.visualizer.Visualize(events, vc.maxDepth, vc.startingFunc, vc.outputFile); err != nil {
 		return fmt.Errorf("error visualizing sequence diagram: %v", err)
 	}
 	return nil

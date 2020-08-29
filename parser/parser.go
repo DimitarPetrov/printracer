@@ -6,12 +6,9 @@ import (
 	"strings"
 )
 
-type Parser struct {
-	in io.Reader
-}
-
-func NewParser(in io.Reader) *Parser {
-	return &Parser{in: in}
+//go:generate counterfeiter . Parser
+type Parser interface {
+	Parse(in io.Reader) ([]FuncEvent, error)
 }
 
 type FuncEventType int
@@ -42,9 +39,16 @@ func (ie *ReturningEvent) FuncName() string {
 	return ie.Name
 }
 
-func (p *Parser) Parse() ([]FuncEvent, error) {
+type parser struct {
+}
+
+func NewParser() Parser {
+	return &parser{}
+}
+
+func (p *parser) Parse(in io.Reader) ([]FuncEvent, error) {
 	var events []FuncEvent
-	scanner := bufio.NewScanner(p.in)
+	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
 		row := scanner.Text()
 		if strings.HasPrefix(row, "Entering function") {

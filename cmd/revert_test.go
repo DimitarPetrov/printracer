@@ -9,9 +9,9 @@ import (
 func TestRevertCmd(t *testing.T) {
 	fakeDeinstrumenter := &tracingfakes.FakeCodeDeinstrumenter{}
 	fakeImportsGroomer := &tracingfakes.FakeImportsGroomer{}
-	cmd := NewRevertCmd(fakeDeinstrumenter, fakeImportsGroomer)
+	cmd := NewRevertCmd(fakeDeinstrumenter, fakeImportsGroomer).Prepare()
 
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Execute(); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -19,12 +19,12 @@ func TestRevertCmd(t *testing.T) {
 func TestRevertCmdReturnsErrorWhenDeinstrumenterReturnError(t *testing.T) {
 	fakeDeinstrumenter := &tracingfakes.FakeCodeDeinstrumenter{}
 	fakeImportsGroomer := &tracingfakes.FakeImportsGroomer{}
-	cmd := NewRevertCmd(fakeDeinstrumenter, fakeImportsGroomer)
+	cmd := NewRevertCmd(fakeDeinstrumenter, fakeImportsGroomer).Prepare()
 
 	expectedErr := errors.New("error")
 	fakeDeinstrumenter.DeinstrumentDirectoryReturns(expectedErr)
 
-	if err := cmd.Run(); err != expectedErr {
+	if err := cmd.Execute(); err != expectedErr {
 		t.Error("Assertion failed!")
 	}
 }
@@ -32,12 +32,12 @@ func TestRevertCmdReturnsErrorWhenDeinstrumenterReturnError(t *testing.T) {
 func TestRevertCmdReturnsErrorWhenImportsGroomerReturnError(t *testing.T) {
 	fakeDeinstrumenter := &tracingfakes.FakeCodeDeinstrumenter{}
 	fakeImportsGroomer := &tracingfakes.FakeImportsGroomer{}
-	cmd := NewRevertCmd(fakeDeinstrumenter, fakeImportsGroomer)
+	cmd := NewRevertCmd(fakeDeinstrumenter, fakeImportsGroomer).Prepare()
 
 	expectedErr := errors.New("error")
 	fakeImportsGroomer.RemoveUnusedImportFromDirectoryReturns(expectedErr)
 
-	if err := cmd.Run(); err != expectedErr {
+	if err := cmd.Execute(); err != expectedErr {
 		t.Error("Assertion failed!")
 	}
 }

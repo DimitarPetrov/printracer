@@ -209,8 +209,6 @@ func TestInstrumentFile(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			fmt.Println(buff.String())
-
 			if buff.String() != test.OutputCode {
 				t.Error("Assertion failed!")
 			}

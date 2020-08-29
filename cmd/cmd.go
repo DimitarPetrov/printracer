@@ -12,7 +12,7 @@ type Command interface {
 }
 
 type CommandWithArgs interface {
-	Parse([]string) error
+	Validate([]string) error
 }
 
 func commonRunE(cmd Command) func(*cobra.Command, []string) error {
@@ -24,7 +24,7 @@ func commonRunE(cmd Command) func(*cobra.Command, []string) error {
 func commonPreRunE(cmd Command) func(*cobra.Command, []string) error {
 	return func(c *cobra.Command, args []string) error {
 		if cmdWithArgs, ok := cmd.(CommandWithArgs); ok {
-			if err := cmdWithArgs.Parse(args); err != nil {
+			if err := cmdWithArgs.Validate(args); err != nil {
 				return err
 			}
 		}

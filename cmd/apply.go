@@ -26,6 +26,7 @@ func (ac *ApplyCmd) Prepare() *cobra.Command {
 		Short:   "Instruments a directory of go files",
 		PreRunE: commonPreRunE(ac),
 		RunE:    commonRunE(ac),
+		SilenceUsage: true,
 	}
 }
 

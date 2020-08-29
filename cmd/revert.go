@@ -26,6 +26,7 @@ func (rc *RevertCmd) Prepare() *cobra.Command {
 		Short:   "Reverts previously instrumented directory of go files",
 		PreRunE: commonPreRunE(rc),
 		RunE:    commonRunE(rc),
+		SilenceUsage: true,
 	}
 }
 
