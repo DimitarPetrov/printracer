@@ -20,6 +20,8 @@ func TestDeinstrumentFile(t *testing.T) {
 		{Name: "DeinstrumentFileWithFmtImportOnly", InputCode: resultCodeWithFmtImport, OutputCode: codeWithFmtImport},
 		{Name: "DeinstrumentFileWithMultipleImports", InputCode: resultCodeWithMultipleImports, OutputCode: codeWithMultipleImports},
 		{Name: "DeinstrumentFileWithoutFmtImport", InputCode: resultCodeWithImportsWithoutFmt, OutputCode: codeWithImportsWithoutFmt},
+		{Name: "DeinstrumentFileWithoutFunctions", InputCode: resultCodeWithoutFunction, OutputCode: codeWithoutFunction},
+		{Name: "DeinstrumentFileWithoutPreviousInstrumentation", InputCode: codeWithMultipleImports, OutputCode: codeWithMultipleImports},
 	}
 
 	for _, test := range tests {
@@ -30,7 +32,7 @@ func TestDeinstrumentFile(t *testing.T) {
 				t.Fatal(err)
 			}
 			var buff bytes.Buffer
-			if err := DeinstrumentFile(fset, file, &buff); err != nil {
+			if err := NewCodeDeinstrumenter().DeinstrumentFile(fset, file, &buff); err != nil {
 				t.Fatal(err)
 			}
 
@@ -40,7 +42,7 @@ func TestDeinstrumentFile(t *testing.T) {
 			}
 
 			var buff2 bytes.Buffer
-			if err := RemoveUnusedImportFromFile(fset, file, &buff2, "fmt"); err != nil {
+			if err := NewImportsGroomer().RemoveUnusedImportFromFile(fset, file, &buff2, "fmt"); err != nil {
 				t.Fatal(err)
 			}
 
@@ -69,6 +71,7 @@ func TestDeinstrumentDirectory(t *testing.T) {
 		{InputCode: resultCodeWithFmtImport, OutputCode: codeWithFmtImport},
 		{InputCode: resultCodeWithMultipleImports, OutputCode: codeWithMultipleImports},
 		{InputCode: resultCodeWithImportsWithoutFmt, OutputCode: codeWithImportsWithoutFmt},
+		{InputCode: resultCodeWithoutFunction, OutputCode: codeWithoutFunction},
 	}
 
 	i := 0
@@ -79,11 +82,11 @@ func TestDeinstrumentDirectory(t *testing.T) {
 		i++
 	}
 
-	if err := DeinstrumentDirectory("test"); err != nil {
+	if err := NewCodeDeinstrumenter().DeinstrumentDirectory("test"); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := RemoveUnusedImportFromDirectory("test", "fmt"); err != nil {
+	if err := NewImportsGroomer().RemoveUnusedImportFromDirectory("test", "fmt"); err != nil {
 		t.Fatal(err)
 	}
 

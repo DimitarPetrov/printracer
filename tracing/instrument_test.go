@@ -168,6 +168,22 @@ func main() {
 }
 `
 
+const codeWithoutFunction = `package a
+
+type test struct {
+	a int
+}
+`
+
+const resultCodeWithoutFunction = `package a
+
+import "fmt"
+
+type test struct {
+	a int
+}
+`
+
 func TestInstrumentFile(t *testing.T) {
 	tests := []struct {
 		Name       string
@@ -178,6 +194,7 @@ func TestInstrumentFile(t *testing.T) {
 		{Name: "InstrumentFileWithFmtImportOnly", InputCode: codeWithFmtImport, OutputCode: resultCodeWithFmtImport},
 		{Name: "InstrumentFileWithMultipleImports", InputCode: codeWithMultipleImports, OutputCode: resultCodeWithMultipleImports},
 		{Name: "InstrumentFileWithoutFmtImport", InputCode: codeWithImportsWithoutFmt, OutputCode: resultCodeWithImportsWithoutFmt},
+		{Name: "InstrumentFileWithoutFunctions", InputCode: codeWithoutFunction, OutputCode: resultCodeWithoutFunction},
 	}
 
 	for _, test := range tests {
@@ -188,9 +205,11 @@ func TestInstrumentFile(t *testing.T) {
 				t.Fatal(err)
 			}
 			var buff bytes.Buffer
-			if err := InstrumentFile(fset, file, &buff); err != nil {
+			if err := NewCodeInstrumenter().InstrumentFile(fset, file, &buff); err != nil {
 				t.Fatal(err)
 			}
+
+			fmt.Println(buff.String())
 
 			if buff.String() != test.OutputCode {
 				t.Error("Assertion failed!")
@@ -217,6 +236,7 @@ func TestInstrumentDirectory(t *testing.T) {
 		{InputCode: codeWithFmtImport, OutputCode: resultCodeWithFmtImport},
 		{InputCode: codeWithMultipleImports, OutputCode: resultCodeWithMultipleImports},
 		{InputCode: codeWithImportsWithoutFmt, OutputCode: resultCodeWithImportsWithoutFmt},
+		{InputCode: codeWithoutFunction, OutputCode: resultCodeWithoutFunction},
 	}
 
 	i := 0
@@ -227,7 +247,7 @@ func TestInstrumentDirectory(t *testing.T) {
 		i++
 	}
 
-	if err := InstrumentDirectory("test"); err != nil {
+	if err := NewCodeInstrumenter().InstrumentDirectory("test"); err != nil {
 		t.Fatal(err)
 	}
 

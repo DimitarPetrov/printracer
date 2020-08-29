@@ -8,10 +8,15 @@ import (
 )
 
 type RevertCmd struct {
+	deinstrumenter tracing.CodeDeinstrumenter
+	importsGroomer tracing.ImportsGroomer
 }
 
-func NewRevertCmd() *RevertCmd {
-	return &RevertCmd{}
+func NewRevertCmd(deinstrumenter tracing.CodeDeinstrumenter, importsGroomer tracing.ImportsGroomer) *RevertCmd {
+	return &RevertCmd{
+		deinstrumenter: deinstrumenter,
+		importsGroomer: importsGroomer,
+	}
 }
 
 func (rc *RevertCmd) Prepare() *cobra.Command {
@@ -31,10 +36,10 @@ func (rc *RevertCmd) Run() error {
 	}
 
 	return mapDirectory(wd, func(path string) error {
-		err := tracing.DeinstrumentDirectory(path)
+		err := rc.deinstrumenter.DeinstrumentDirectory(path)
 		if err != nil {
 			return err
 		}
-		return tracing.RemoveUnusedImportFromDirectory(path, "fmt")
+		return rc.importsGroomer.RemoveUnusedImportFromDirectory(path, "fmt")
 	})
 }

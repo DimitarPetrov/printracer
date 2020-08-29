@@ -8,10 +8,15 @@ import (
 )
 
 type ApplyCmd struct {
+	instrumenter   tracing.CodeInstrumenter
+	importsGroomer tracing.ImportsGroomer
 }
 
-func NewApplyCmd() *ApplyCmd {
-	return &ApplyCmd{}
+func NewApplyCmd(instrumenter tracing.CodeInstrumenter, importsGroomer tracing.ImportsGroomer) *ApplyCmd {
+	return &ApplyCmd{
+		instrumenter:   instrumenter,
+		importsGroomer: importsGroomer,
+	}
 }
 
 func (ac *ApplyCmd) Prepare() *cobra.Command {
@@ -31,10 +36,10 @@ func (ac *ApplyCmd) Run() error {
 	}
 
 	return mapDirectory(wd, func(path string) error {
-		err := tracing.InstrumentDirectory(path)
+		err := ac.instrumenter.InstrumentDirectory(path)
 		if err != nil {
 			return err
 		}
-		return tracing.RemoveUnusedImportFromDirectory(path, "fmt")
+		return ac.importsGroomer.RemoveUnusedImportFromDirectory(path, "fmt")
 	})
 }

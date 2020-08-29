@@ -12,7 +12,14 @@ import (
 	"os"
 )
 
-func InstrumentDirectory(path string) error {
+type codeInstrumenter struct {
+}
+
+func NewCodeInstrumenter() CodeInstrumenter {
+	return &codeInstrumenter{}
+}
+
+func (ci *codeInstrumenter) InstrumentDirectory(path string) error {
 	fset := token.NewFileSet()
 	filter := func(info os.FileInfo) bool {
 		return testsFilter(info) && generatedFilter(path, info)
@@ -23,27 +30,27 @@ func InstrumentDirectory(path string) error {
 	}
 
 	for _, pkg := range pkgs {
-		if err := InstrumentPackage(fset, pkg); err != nil {
+		if err := ci.InstrumentPackage(fset, pkg); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func InstrumentPackage(fset *token.FileSet, pkg *ast.Package) error {
+func (ci *codeInstrumenter) InstrumentPackage(fset *token.FileSet, pkg *ast.Package) error {
 	for fileName, file := range pkg.Files {
 		sourceFile, err := os.OpenFile(fileName, os.O_TRUNC|os.O_WRONLY, 0664)
 		if err != nil {
 			return fmt.Errorf("failed opening file %s: %v", fileName, err)
 		}
-		if err := InstrumentFile(fset, file, sourceFile); err != nil {
+		if err := ci.InstrumentFile(fset, file, sourceFile); err != nil {
 			return fmt.Errorf("failed instrumenting file %s: %v", fileName, err)
 		}
 	}
 	return nil
 }
 
-func InstrumentFile(fset *token.FileSet, file *ast.File, out io.Writer) error {
+func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, out io.Writer) error {
 	astutil.AddImport(fset, file, "fmt")
 
 	// Needed because ast does not support floating comments and deletes them.
