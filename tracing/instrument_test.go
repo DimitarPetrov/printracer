@@ -27,8 +27,8 @@ func main() {
 const resultCodeWithoutImports = `package a
 
 import (
+	"crypto/rand"
 	"fmt"
-	"rand"
 	rt "runtime"
 )
 
@@ -79,8 +79,8 @@ func main() {
 const editedResultCodeWithoutImports = `package a
 
 import (
+	"crypto/rand"
 	"fmt"
-	"rand"
 	rt "runtime"
 )
 
@@ -149,8 +149,8 @@ func main() {
 const resultCodeWithFmtImport = `package a
 
 import (
+	"crypto/rand"
 	"fmt"
-	"rand"
 	rt "runtime"
 )
 
@@ -222,8 +222,8 @@ func main() {
 const resultCodeWithMultipleImports = `package a
 
 import (
+	"crypto/rand"
 	"fmt"
-	"rand"
 	rt "runtime"
 	"strconv"
 )
@@ -295,8 +295,8 @@ func main() {
 const resultCodeWithImportsWithoutFmt = `package a
 
 import (
+	"crypto/rand"
 	"fmt"
-	"rand"
 	rt "runtime"
 	"strconv"
 )
@@ -356,8 +356,8 @@ type test struct {
 const resultCodeWithoutFunction = `package a
 
 import (
+	"crypto/rand"
 	"fmt"
-	"rand"
 	rt "runtime"
 )
 
