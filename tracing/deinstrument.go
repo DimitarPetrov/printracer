@@ -68,7 +68,9 @@ func (cd *codeDeinstrumenter) DeinstrumentFile(fset *token.FileSet, file *ast.Fi
 
 					if checkInstrumentationStatementsIntegrity(t) {
 						t.Body.List = t.Body.List[instrumentationStmtsCount:]
-						t.Body.List[0].Decorations().Before = dst.None
+						if len(t.Body.List) > 0 {
+							t.Body.List[0].Decorations().Before = dst.None
+						}
 					}
 				}
 			}

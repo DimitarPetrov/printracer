@@ -83,7 +83,7 @@ func (ci *codeInstrumenter) InstrumentPackage(fset *token.FileSet, pkg *ast.Pack
 
 func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, out io.Writer) error {
 	astutil.AddImport(fset, file, "fmt")
-	astutil.AddImport(fset, file, "runtime")
+	astutil.AddNamedImport(fset, file, "rt", "runtime")
 	astutil.AddImport(fset, file, "rand")
 
 	// Needed because ast does not support floating comments and deletes them.

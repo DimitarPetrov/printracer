@@ -29,7 +29,7 @@ const resultCodeWithoutImports = `package a
 import (
 	"fmt"
 	"rand"
-	"runtime"
+	rt "runtime"
 )
 
 func test(i int, b bool) int {
@@ -37,11 +37,11 @@ func test(i int, b bool) int {
 	/* prinTracer */
 	funcName := "test"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -60,11 +60,11 @@ func main() {
 	/* prinTracer */
 	funcName := "main"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -81,7 +81,7 @@ const editedResultCodeWithoutImports = `package a
 import (
 	"fmt"
 	"rand"
-	"runtime"
+	rt "runtime"
 )
 
 func test(i int, b bool) int {
@@ -89,11 +89,11 @@ func test(i int, b bool) int {
 	/* prinTracer */
 	funcName := "test2"
 	caller := "unknown2"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	fmt.Println("test")
 	idBytes := make([]byte, 16)
@@ -112,11 +112,11 @@ func main() {
 
 	funcName := "main"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -151,7 +151,7 @@ const resultCodeWithFmtImport = `package a
 import (
 	"fmt"
 	"rand"
-	"runtime"
+	rt "runtime"
 )
 
 func test(i int, b bool) int {
@@ -159,11 +159,11 @@ func test(i int, b bool) int {
 	/* prinTracer */
 	funcName := "test"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -182,11 +182,11 @@ func main() {
 	/* prinTracer */
 	funcName := "main"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -224,7 +224,7 @@ const resultCodeWithMultipleImports = `package a
 import (
 	"fmt"
 	"rand"
-	"runtime"
+	rt "runtime"
 	"strconv"
 )
 
@@ -233,11 +233,11 @@ func test(i int, b bool) int {
 	/* prinTracer */
 	funcName := "test"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -256,11 +256,11 @@ func main() {
 	/* prinTracer */
 	funcName := "main"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -297,7 +297,7 @@ const resultCodeWithImportsWithoutFmt = `package a
 import (
 	"fmt"
 	"rand"
-	"runtime"
+	rt "runtime"
 	"strconv"
 )
 
@@ -306,11 +306,11 @@ func test(i int, b bool) int {
 	/* prinTracer */
 	funcName := "test"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -329,11 +329,11 @@ func main() {
 	/* prinTracer */
 	funcName := "main"
 	caller := "unknown"
-	if funcPC, _, _, ok := runtime.Caller(0); ok {
-		funcName = runtime.FuncForPC(funcPC).Name()
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
 	}
-	if callerPC, _, _, ok := runtime.Caller(1); ok {
-		caller = runtime.FuncForPC(callerPC).Name()
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
 	}
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
@@ -358,7 +358,7 @@ const resultCodeWithoutFunction = `package a
 import (
 	"fmt"
 	"rand"
-	"runtime"
+	rt "runtime"
 )
 
 type test struct {

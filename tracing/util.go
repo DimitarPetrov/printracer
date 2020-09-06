@@ -165,7 +165,7 @@ func newGetFuncNameIfStatement(funcIndex, funcPcVarName, funcNameVarName string)
 				&dst.CallExpr{
 					Fun: &dst.SelectorExpr{
 						X: &dst.Ident{
-							Name: "runtime",
+							Name: "rt",
 						},
 						Sel: &dst.Ident{
 							Name: "Caller",
@@ -198,7 +198,7 @@ func newGetFuncNameIfStatement(funcIndex, funcPcVarName, funcNameVarName string)
 								X: &dst.CallExpr{
 									Fun: &dst.SelectorExpr{
 										X: &dst.Ident{
-											Name: "runtime",
+											Name: "rt",
 										},
 										Sel: &dst.Ident{
 											Name: "FuncForPC",
@@ -253,6 +253,8 @@ func newMakeByteSliceStmt() *dst.AssignStmt {
 	}
 }
 
+// Returns dst statement like:
+// _, _ = rand.Read(idBytes)
 func newRandReadStmt() *dst.AssignStmt {
 	return &dst.AssignStmt{
 		Lhs: []dst.Expr{
@@ -284,6 +286,8 @@ func newRandReadStmt() *dst.AssignStmt {
 	}
 }
 
+// Returns dst statement like:
+// callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
 func newParseUUIDFromByteSliceStmt(callIDVarName string) *dst.AssignStmt {
 	return &dst.AssignStmt{
 		Lhs: []dst.Expr{

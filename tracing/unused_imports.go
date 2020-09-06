@@ -18,7 +18,7 @@ func NewImportsGroomer() ImportsGroomer {
 	return &importsGroomer{}
 }
 
-func (ig *importsGroomer) RemoveUnusedImportFromDirectory(path string, importsToRemove []string) error {
+func (ig *importsGroomer) RemoveUnusedImportFromDirectory(path string, importsToRemove map[string]string) error {
 	fset := token.NewFileSet()
 	filter := func(info os.FileInfo) bool {
 		return testsFilter(info) && generatedFilter(path, info)
@@ -36,7 +36,7 @@ func (ig *importsGroomer) RemoveUnusedImportFromDirectory(path string, importsTo
 	return nil
 }
 
-func (ig *importsGroomer) RemoveUnusedImportFromPackage(fset *token.FileSet, pkg *ast.Package, importsToRemove []string) error {
+func (ig *importsGroomer) RemoveUnusedImportFromPackage(fset *token.FileSet, pkg *ast.Package, importsToRemove map[string]string) error {
 	for fileName, file := range pkg.Files {
 		sourceFile, err := os.OpenFile(fileName, os.O_TRUNC|os.O_WRONLY, 0664)
 		if err != nil {
@@ -49,10 +49,10 @@ func (ig *importsGroomer) RemoveUnusedImportFromPackage(fset *token.FileSet, pkg
 	return nil
 }
 
-func (ig *importsGroomer) RemoveUnusedImportFromFile(fset *token.FileSet, file *ast.File, out io.Writer, importsToRemove []string) error {
-	for _, importToRemove := range importsToRemove {
+func (ig *importsGroomer) RemoveUnusedImportFromFile(fset *token.FileSet, file *ast.File, out io.Writer, importsToRemove map[string]string) error {
+	for importToRemove, alias := range importsToRemove {
 		if !astutil.UsesImport(file, importToRemove) {
-			astutil.DeleteImport(fset, file, importToRemove)
+			astutil.DeleteNamedImport(fset, file, alias, importToRemove)
 		}
 	}
 	// Needed because ast does not support floating comments and deletes them.

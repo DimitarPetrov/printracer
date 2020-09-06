@@ -27,7 +27,7 @@ func TestRemoveUnusedImportsFromFile(t *testing.T) {
 				t.Fatal(err)
 			}
 			var buff bytes.Buffer
-			if err := NewImportsGroomer().RemoveUnusedImportFromFile(fset, file, &buff, []string{"fmt", "runtime", "rand"}); err != nil {
+			if err := NewImportsGroomer().RemoveUnusedImportFromFile(fset, file, &buff, map[string]string{"fmt":"", "runtime":"rt", "rand":""}); err != nil {
 				t.Fatal(err)
 			}
 
@@ -63,7 +63,7 @@ func TestRemoveUnusedImportsFromDirectory(t *testing.T) {
 		i++
 	}
 
-	if err := NewImportsGroomer().RemoveUnusedImportFromDirectory("test", []string{"fmt", "runtime", "rand"}); err != nil {
+	if err := NewImportsGroomer().RemoveUnusedImportFromDirectory("test", map[string]string{"fmt":"", "runtime":"rt", "rand":""}); err != nil {
 		t.Fatal(err)
 	}
 

@@ -43,7 +43,7 @@ func TestDeinstrumentFile(t *testing.T) {
 			}
 
 			var buff2 bytes.Buffer
-			if err := NewImportsGroomer().RemoveUnusedImportFromFile(fset, file, &buff2, []string{"fmt", "runtime", "rand"}); err != nil {
+			if err := NewImportsGroomer().RemoveUnusedImportFromFile(fset, file, &buff2, map[string]string{"fmt":"", "runtime":"rt", "rand":""}); err != nil {
 				t.Fatal(err)
 			}
 
@@ -87,7 +87,7 @@ func TestDeinstrumentDirectory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := NewImportsGroomer().RemoveUnusedImportFromDirectory("test", []string{"fmt", "runtime", "rand"}); err != nil {
+	if err := NewImportsGroomer().RemoveUnusedImportFromDirectory("test", map[string]string{"fmt":"", "runtime":"rt", "rand":""}); err != nil {
 		t.Fatal(err)
 	}
 

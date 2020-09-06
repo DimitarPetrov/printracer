@@ -41,6 +41,6 @@ func (ac *ApplyCmd) Run() error {
 		if err != nil {
 			return err
 		}
-		return ac.importsGroomer.RemoveUnusedImportFromDirectory(path, []string{"fmt", "runtime", "rand"})
+		return ac.importsGroomer.RemoveUnusedImportFromDirectory(path, map[string]string{"fmt":"", "runtime":"rt", "rand":""})
 	})
 }

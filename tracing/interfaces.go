@@ -22,7 +22,7 @@ type CodeDeinstrumenter interface {
 
 //go:generate counterfeiter . ImportsGroomer
 type ImportsGroomer interface {
-	RemoveUnusedImportFromFile(fset *token.FileSet, file *ast.File, out io.Writer, importsToRemove []string) error
-	RemoveUnusedImportFromPackage(fset *token.FileSet, pkg *ast.Package, importsToRemove []string) error
-	RemoveUnusedImportFromDirectory(path string, importsToRemove []string) error
+	RemoveUnusedImportFromFile(fset *token.FileSet, file *ast.File, out io.Writer, importsToRemove map[string]string) error
+	RemoveUnusedImportFromPackage(fset *token.FileSet, pkg *ast.Package, importsToRemove map[string]string) error
+	RemoveUnusedImportFromDirectory(path string, importsToRemove map[string]string) error
 }
