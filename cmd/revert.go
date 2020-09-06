@@ -41,6 +41,6 @@ func (rc *RevertCmd) Run() error {
 		if err != nil {
 			return err
 		}
-		return rc.importsGroomer.RemoveUnusedImportFromDirectory(path, "fmt")
+		return rc.importsGroomer.RemoveUnusedImportFromDirectory(path, []string{"fmt", "runtime", "rand"})
 	})
 }

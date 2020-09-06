@@ -12,6 +12,11 @@ import (
 	"os"
 )
 
+const funcNameVarName = "funcName"
+const callerFuncNameVarName = "caller"
+const callIDVarName = "callID"
+const instrumentationStmtsCount = 9
+
 type codeInstrumenter struct {
 }
 
@@ -52,6 +57,8 @@ func (ci *codeInstrumenter) InstrumentPackage(fset *token.FileSet, pkg *ast.Pack
 
 func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, out io.Writer) error {
 	astutil.AddImport(fset, file, "fmt")
+	astutil.AddImport(fset, file, "runtime")
+	astutil.AddImport(fset, file, "rand")
 
 	// Needed because ast does not support floating comments and deletes them.
 	// In order to preserve all comments we just pre-parse it to dst which treats them as first class citizens.
@@ -63,10 +70,19 @@ func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, 
 	dst.Inspect(f, func(n dst.Node) bool {
 		switch t := n.(type) {
 		case *dst.FuncDecl:
-			var enteringStringFormat = fmt.Sprintf("Entering function %s", t.Name)
-			var exitingStringFormat = fmt.Sprintf("Exiting function %s", t.Name)
+			var enteringStringFormat = "Function %s called by %s"
+			var exitingStringFormat = "Exiting function %s called by %s; callID=%s"
 
-			var args []dst.Expr
+			args := []dst.Expr{
+				&dst.BasicLit{
+					Kind:  token.STRING,
+					Value: funcNameVarName,
+				},
+				&dst.BasicLit{
+					Kind:  token.STRING,
+					Value: callerFuncNameVarName,
+				},
+			}
 
 			if len(t.Type.Params.List) > 0 {
 				enteringStringFormat += " with args"
@@ -79,22 +95,56 @@ func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, 
 					})
 				}
 			}
-
+			args = append(args, &dst.BasicLit{
+				Kind:  token.STRING,
+				Value: callIDVarName,
+			})
 			args = append([]dst.Expr{
 				&dst.BasicLit{
 					Kind:  token.STRING,
-					Value: `"` + enteringStringFormat + `\n"`,
+					Value: `"` + enteringStringFormat + `; callID=%s\n"`,
 				},
 			}, args...)
 
-			t.Body.List = append([]dst.Stmt{
+			instrumentationStmts := [instrumentationStmtsCount]dst.Stmt{
+				newAssignStmt(funcNameVarName, t.Name.Name),
+				newAssignStmt(callerFuncNameVarName, "unknown"),
+				newGetFuncNameIfStatement("0", "funcPC", funcNameVarName),
+				newGetFuncNameIfStatement("1", "callerPC", callerFuncNameVarName),
+				newMakeByteSliceStmt(),
+				newRandReadStmt(),
+				newParseUUIDFromByteSliceStmt(callIDVarName),
 				&dst.ExprStmt{
 					X: newPrintExprWithArgs(args),
 				},
 				&dst.DeferStmt{
-					Call: newPrintExprWithMessage(exitingStringFormat),
+					Call: newPrintExprWithArgs([]dst.Expr{
+						&dst.BasicLit{
+							Kind:  token.STRING,
+							Value: `"` + exitingStringFormat + `\n"`,
+						},
+						&dst.BasicLit{
+							Kind:  token.STRING,
+							Value: funcNameVarName,
+						},
+						&dst.BasicLit{
+							Kind:  token.STRING,
+							Value: callerFuncNameVarName,
+						},
+						&dst.BasicLit{
+							Kind:  token.STRING,
+							Value: callIDVarName,
+						},
+					}),
 				},
-			}, t.Body.List...)
+			}
+
+			t.Body.List = append(instrumentationStmts[:], t.Body.List...)
+
+			t.Body.List[0].Decorations().Before = dst.EmptyLine
+			t.Body.List[0].Decorations().Start.Append("/* prinTracer */")
+			t.Body.List[instrumentationStmtsCount-1].Decorations().After = dst.EmptyLine
+			t.Body.List[instrumentationStmtsCount-1].Decorations().End.Append("/* prinTracer */")
 		}
 		return true
 	})

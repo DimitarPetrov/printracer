@@ -9,7 +9,6 @@ import (
 	"go/token"
 	"io"
 	"os"
-	"strings"
 )
 
 type codeDeinstrumenter struct {
@@ -60,30 +59,13 @@ func (cd *codeDeinstrumenter) DeinstrumentFile(fset *token.FileSet, file *ast.Fi
 	dst.Inspect(f, func(n dst.Node) bool {
 		switch t := n.(type) {
 		case *dst.FuncDecl:
-			if len(t.Body.List) > 1 {
-				stmt1, ok1 := t.Body.List[0].(*dst.ExprStmt)
-				stmt2, ok2 := t.Body.List[1].(*dst.DeferStmt)
-				if ok1 && ok2 {
-					expr1, ok := stmt1.X.(*dst.CallExpr)
-					if ok {
-						selExpr1, ok1 := expr1.Fun.(*dst.SelectorExpr)
-						selExpr2, ok2 := stmt2.Call.Fun.(*dst.SelectorExpr)
-						if ok1 && ok2 {
-							package1, ok1 := selExpr1.X.(*dst.Ident)
-							package2, ok2 := selExpr2.X.(*dst.Ident)
-							if ok1 && ok2 && package1.Name == "fmt" && package2.Name == "fmt" &&
-								selExpr1.Sel.Name == "Printf" && selExpr2.Sel.Name == "Printf" {
-
-								expr1Arg, ok1 := expr1.Args[0].(*dst.BasicLit)
-								expr2Arg, ok2 := stmt2.Call.Args[0].(*dst.BasicLit)
-								if ok1 && ok2 && expr1Arg.Kind == token.STRING && expr2Arg.Kind == token.STRING &&
-									strings.Contains(expr1Arg.Value, fmt.Sprintf("Entering function %s", t.Name)) &&
-									strings.Contains(expr2Arg.Value, fmt.Sprintf("Exiting function %s", t.Name)) {
-									t.Body.List = t.Body.List[2:]
-								}
-							}
-						}
-					}
+			if len(t.Body.List) >= instrumentationStmtsCount {
+				firstStmntDecorations := t.Body.List[0].Decorations().Start.All()
+				secondStmntDecorations := t.Body.List[instrumentationStmtsCount-1].Decorations().End.All()
+				if len(firstStmntDecorations) > 0 && firstStmntDecorations[0] == "/* prinTracer */" &&
+					len(secondStmntDecorations) > 0 && secondStmntDecorations[0] == "/* prinTracer */" {
+					t.Body.List = t.Body.List[instrumentationStmtsCount:]
+					t.Body.List[0].Decorations().Before = dst.None
 				}
 			}
 		}
