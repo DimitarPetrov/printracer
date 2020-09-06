@@ -60,6 +60,66 @@ func newPrintExprWithArgs(args []dst.Expr) *dst.CallExpr {
 	}
 }
 
+func buildEnteringFunctionArgs(f *dst.FuncDecl) []dst.Expr {
+	var enteringStringFormat = "Function %s called by %s"
+	args := []dst.Expr{
+		&dst.BasicLit{
+			Kind:  token.STRING,
+			Value: funcNameVarName,
+		},
+		&dst.BasicLit{
+			Kind:  token.STRING,
+			Value: callerFuncNameVarName,
+		},
+	}
+
+	if len(f.Type.Params.List) > 0 {
+		enteringStringFormat += " with args"
+
+		for _, param := range f.Type.Params.List {
+			enteringStringFormat += " (%v)"
+			args = append(args, &dst.BasicLit{
+				Kind:  token.STRING,
+				Value: param.Names[0].Name,
+			})
+		}
+	}
+	args = append(args, &dst.BasicLit{
+		Kind:  token.STRING,
+		Value: callIDVarName,
+	})
+	args = append([]dst.Expr{
+		&dst.BasicLit{
+			Kind:  token.STRING,
+			Value: `"` + enteringStringFormat + `; callID=%s\n"`,
+		},
+	}, args...)
+
+	return args
+}
+
+func buildExitFunctionArgs() []dst.Expr {
+	var exitingStringFormat = "Exiting function %s called by %s; callID=%s"
+	return []dst.Expr{
+		&dst.BasicLit{
+			Kind:  token.STRING,
+			Value: `"` + exitingStringFormat + `\n"`,
+		},
+		&dst.BasicLit{
+			Kind:  token.STRING,
+			Value: funcNameVarName,
+		},
+		&dst.BasicLit{
+			Kind:  token.STRING,
+			Value: callerFuncNameVarName,
+		},
+		&dst.BasicLit{
+			Kind:  token.STRING,
+			Value: callIDVarName,
+		},
+	}
+}
+
 // Return dst statement like: varName := "value"
 func newAssignStmt(varName, value string) *dst.AssignStmt {
 	return &dst.AssignStmt{

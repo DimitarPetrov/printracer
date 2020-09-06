@@ -13,9 +13,35 @@ import (
 )
 
 const funcNameVarName = "funcName"
+const funcPCVarName = "funcPC"
+
 const callerFuncNameVarName = "caller"
+const defaultCallerName = "unknown"
+const callerFuncPCVarName = "callerPC"
+
 const callIDVarName = "callID"
-const instrumentationStmtsCount = 9
+
+const printracerCommentWatermark = "/* prinTracer */"
+
+const instrumentationStmtsCount = 9 // Acts like a contract of how many statements instrumentation adds and deinstrumentation removes.
+
+func buildInstrumentationStmts(f *dst.FuncDecl) [instrumentationStmtsCount]dst.Stmt {
+	return [instrumentationStmtsCount]dst.Stmt{
+		newAssignStmt(funcNameVarName, f.Name.Name),
+		newAssignStmt(callerFuncNameVarName, defaultCallerName),
+		newGetFuncNameIfStatement("0", funcPCVarName, funcNameVarName),
+		newGetFuncNameIfStatement("1", callerFuncPCVarName, callerFuncNameVarName),
+		newMakeByteSliceStmt(),
+		newRandReadStmt(),
+		newParseUUIDFromByteSliceStmt(callIDVarName),
+		&dst.ExprStmt{
+			X: newPrintExprWithArgs(buildEnteringFunctionArgs(f)),
+		},
+		&dst.DeferStmt{
+			Call: newPrintExprWithArgs(buildExitFunctionArgs()),
+		},
+	}
+}
 
 type codeInstrumenter struct {
 }
@@ -70,81 +96,13 @@ func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, 
 	dst.Inspect(f, func(n dst.Node) bool {
 		switch t := n.(type) {
 		case *dst.FuncDecl:
-			var enteringStringFormat = "Function %s called by %s"
-			var exitingStringFormat = "Exiting function %s called by %s; callID=%s"
-
-			args := []dst.Expr{
-				&dst.BasicLit{
-					Kind:  token.STRING,
-					Value: funcNameVarName,
-				},
-				&dst.BasicLit{
-					Kind:  token.STRING,
-					Value: callerFuncNameVarName,
-				},
-			}
-
-			if len(t.Type.Params.List) > 0 {
-				enteringStringFormat += " with args"
-
-				for _, param := range t.Type.Params.List {
-					enteringStringFormat += " (%v)"
-					args = append(args, &dst.BasicLit{
-						Kind:  token.STRING,
-						Value: param.Names[0].Name,
-					})
-				}
-			}
-			args = append(args, &dst.BasicLit{
-				Kind:  token.STRING,
-				Value: callIDVarName,
-			})
-			args = append([]dst.Expr{
-				&dst.BasicLit{
-					Kind:  token.STRING,
-					Value: `"` + enteringStringFormat + `; callID=%s\n"`,
-				},
-			}, args...)
-
-			instrumentationStmts := [instrumentationStmtsCount]dst.Stmt{
-				newAssignStmt(funcNameVarName, t.Name.Name),
-				newAssignStmt(callerFuncNameVarName, "unknown"),
-				newGetFuncNameIfStatement("0", "funcPC", funcNameVarName),
-				newGetFuncNameIfStatement("1", "callerPC", callerFuncNameVarName),
-				newMakeByteSliceStmt(),
-				newRandReadStmt(),
-				newParseUUIDFromByteSliceStmt(callIDVarName),
-				&dst.ExprStmt{
-					X: newPrintExprWithArgs(args),
-				},
-				&dst.DeferStmt{
-					Call: newPrintExprWithArgs([]dst.Expr{
-						&dst.BasicLit{
-							Kind:  token.STRING,
-							Value: `"` + exitingStringFormat + `\n"`,
-						},
-						&dst.BasicLit{
-							Kind:  token.STRING,
-							Value: funcNameVarName,
-						},
-						&dst.BasicLit{
-							Kind:  token.STRING,
-							Value: callerFuncNameVarName,
-						},
-						&dst.BasicLit{
-							Kind:  token.STRING,
-							Value: callIDVarName,
-						},
-					}),
-				},
-			}
-
+			instrumentationStmts := buildInstrumentationStmts(t)
 			t.Body.List = append(instrumentationStmts[:], t.Body.List...)
 
 			t.Body.List[0].Decorations().Before = dst.EmptyLine
-			t.Body.List[0].Decorations().Start.Append("/* prinTracer */")
+			t.Body.List[0].Decorations().Start.Append(printracerCommentWatermark)
 			t.Body.List[instrumentationStmtsCount-1].Decorations().After = dst.EmptyLine
-			t.Body.List[instrumentationStmtsCount-1].Decorations().End.Append("/* prinTracer */")
+			t.Body.List[instrumentationStmtsCount-1].Decorations().End.Append(printracerCommentWatermark)
 		}
 		return true
 	})

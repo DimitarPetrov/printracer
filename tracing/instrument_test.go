@@ -76,6 +76,58 @@ func main() {
 }
 `
 
+const editedResultCodeWithoutImports = `package a
+
+import (
+	"fmt"
+	"rand"
+	"runtime"
+)
+
+func test(i int, b bool) int {
+
+	/* prinTracer */
+	funcName := "test2"
+	caller := "unknown2"
+	if funcPC, _, _, ok := runtime.Caller(0); ok {
+		funcName = runtime.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := runtime.Caller(1); ok {
+		caller = runtime.FuncForPC(callerPC).Name()
+	}
+	fmt.Println("test")
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
+	if b {
+		return i
+	}
+	return 0
+}
+
+func main() {
+
+	funcName := "main"
+	caller := "unknown"
+	if funcPC, _, _, ok := runtime.Caller(0); ok {
+		funcName = runtime.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := runtime.Caller(1); ok {
+		caller = runtime.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Function %s called by %s; callID=%s\n", funcName, caller, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID)
+
+	i := test(2, false)
+}
+`
+
 const codeWithFmtImport = `package a
 
 import (
@@ -340,7 +392,7 @@ func TestInstrumentFile(t *testing.T) {
 			}
 
 			if buff.String() != test.OutputCode {
-				t.Error("Assertion failed!")
+				t.Errorf("Assertion failed! Expected %s got %s", test.OutputCode, buff.String())
 			}
 		})
 	}

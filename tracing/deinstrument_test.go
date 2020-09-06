@@ -22,6 +22,7 @@ func TestDeinstrumentFile(t *testing.T) {
 		{Name: "DeinstrumentFileWithoutFmtImport", InputCode: resultCodeWithImportsWithoutFmt, OutputCode: codeWithImportsWithoutFmt},
 		{Name: "DeinstrumentFileWithoutFunctions", InputCode: resultCodeWithoutFunction, OutputCode: codeWithoutFunction},
 		{Name: "DeinstrumentFileWithoutPreviousInstrumentation", InputCode: codeWithMultipleImports, OutputCode: codeWithMultipleImports},
+		{Name: "DeinstrumentFileDoesNotChangeManuallyEditedFunctions", InputCode: editedResultCodeWithoutImports, OutputCode: editedResultCodeWithoutImports},
 	}
 
 	for _, test := range tests {
@@ -47,7 +48,7 @@ func TestDeinstrumentFile(t *testing.T) {
 			}
 
 			if buff2.String() != test.OutputCode {
-				t.Error("Assertion failed!")
+				t.Errorf("Assertion failed! Expected %s god %s", test.OutputCode, buff2.String())
 			}
 		})
 	}
