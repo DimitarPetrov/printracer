@@ -150,8 +150,8 @@ func TestVisualize(t *testing.T) {
 	}{
 		{Name: "ConstructTemplateData", MaxDepth: math.MaxInt32, Diagram: fullDiagram, TableRows: fullTableRows},
 		{Name: "ConstructTemplateDataWithDepthLimit", MaxDepth: 2, Diagram: diagramWith2DepthLimit, TableRows: tableRowsWith2DepthLimit},
-		{Name: "ConstructTemplateDataWithFooStartingFunc", MaxDepth: math.MaxInt32, StartingFunc: "foo", Diagram: diagramWithFooStartingFunc, TableRows: tableRowsWithFooStartingFunc},
-		{Name: "ConstructTemplateDataWithFooStartingFuncAndDepthLimit", MaxDepth: 2, StartingFunc: "foo", Diagram: diagramWithFooStartingFuncAnd2DepthLimit, TableRows: tableRowsWithFooStartingFuncAnd2DepthLimit},
+		{Name: "ConstructTemplateDataWithFooStartingFunc", MaxDepth: math.MaxInt32, StartingFunc: "main.foo", Diagram: diagramWithFooStartingFunc, TableRows: tableRowsWithFooStartingFunc},
+		{Name: "ConstructTemplateDataWithFooStartingFuncAndDepthLimit", MaxDepth: 1, StartingFunc: "main.foo", Diagram: diagramWithFooStartingFuncAnd2DepthLimit, TableRows: tableRowsWithFooStartingFuncAnd2DepthLimit},
 	}
 
 	for _, test := range tests {
