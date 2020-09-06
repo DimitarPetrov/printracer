@@ -41,6 +41,6 @@ func (rc *RevertCmd) Run() error {
 		if err != nil {
 			return err
 		}
-		return rc.importsGroomer.RemoveUnusedImportFromDirectory(path, map[string]string{"fmt":"", "runtime":"rt", "crypto/rand":""}) // TODO: flag for import aliases
+		return rc.importsGroomer.RemoveUnusedImportFromDirectory(path, map[string]string{"fmt": "", "runtime": "rt", "crypto/rand": ""}) // TODO: flag for import aliases
 	})
 }

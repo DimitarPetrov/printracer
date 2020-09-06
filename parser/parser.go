@@ -19,24 +19,46 @@ const (
 )
 
 type FuncEvent interface {
-	FuncName() string
+	GetCaller() string
+	GetCallee() string
+	GetCallID() string
 }
 
 type InvocationEvent struct {
-	Name string
-	Args string
+	Caller string
+	Callee string
+	CallID string
+	Args   string
 }
 
-func (ie *InvocationEvent) FuncName() string {
-	return ie.Name
+func (ie *InvocationEvent) GetCaller() string {
+	return ie.Caller
+}
+
+func (ie *InvocationEvent) GetCallee() string {
+	return ie.Callee
+}
+
+func (ie *InvocationEvent) GetCallID() string {
+	return ie.CallID
 }
 
 type ReturningEvent struct {
-	Name string
+	Caller string
+	Callee string
+	CallID string
 }
 
-func (ie *ReturningEvent) FuncName() string {
-	return ie.Name
+func (re *ReturningEvent) GetCaller() string {
+	return re.Caller
+}
+
+func (re *ReturningEvent) GetCallee() string {
+	return re.Callee
+}
+
+func (re *ReturningEvent) GetCallID() string {
+	return re.CallID
 }
 
 type parser struct {
@@ -50,19 +72,25 @@ func (p *parser) Parse(in io.Reader) ([]FuncEvent, error) {
 	var events []FuncEvent
 	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
-		row := scanner.Text()
-		if strings.HasPrefix(row, "Entering function") {
-			words := strings.Split(row, " ")
+		halfs := strings.Split(scanner.Text(), ";")
+		callID := strings.Split(halfs[1], "=")[1]
+		msg := halfs[0]
+		if strings.HasPrefix(msg, "Function") {
+			words := strings.Split(msg, " ")
 			events = append(events, &InvocationEvent{
-				Name: words[2],
-				Args: strings.Join(words[3:], " "),
+				Callee: words[1],
+				Caller: words[4],
+				Args:   strings.Join(words[5:], " "),
+				CallID: callID,
 			})
 		}
 
-		if strings.HasPrefix(row, "Exiting function") {
-			split := strings.Split(row, " ")
+		if strings.HasPrefix(msg, "Exiting function") {
+			words := strings.Split(msg, " ")
 			events = append(events, &ReturningEvent{
-				Name: split[2],
+				Callee: words[2],
+				Caller: words[5],
+				CallID: callID,
 			})
 		}
 	}

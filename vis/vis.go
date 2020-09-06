@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/DimitarPetrov/printracer/parser"
 	"html/template"
+	"math"
 	"os"
 )
 
@@ -43,15 +44,19 @@ const reportTemplate = `
         <tr>
             <th scope="col">#</th>
             <th scope="col">Arguments</th>
+			<th scope="col">Call ID</th>
         </tr>
         </thead>
         <tbody>
-        {{ range $i, $e := .Args }}
+        {{ range $i, $e := .TableRows }}
         <tr id="arg-{{$i}}">
             <th scope="row">{{ inc $i }}</th>
             <td>
-                <pre style="max-height: 1000px; margin-bottom: 0; border: 1px solid #eee;"><code id="event-message-{{$i}}">{{ $e }}</code></pre>
+                <pre style="max-height: 1000px; margin-bottom: 0; border: 1px solid #eee;"><code id="event-message-{{$i}}">{{ $e.Args }}</code></pre>
             </td>
+			<td>
+				<pre style="max-height: 1000px; margin-bottom: 0; border: 1px solid #eee;"><code id="callID-{{$i}}">{{ $e.CallID }}</code></pre>
+			</td>
         </tr>
         {{ end }}
         </tbody>
@@ -138,10 +143,15 @@ func (s *stack) Empty() bool {
 	return s.Length() == 0
 }
 
+type TableRow struct {
+	Args   string
+	CallID string
+}
+
 type templateData struct {
-	Args     []string
-	Diagram  string
-	MetaJSON template.JS
+	TableRows []TableRow
+	Diagram   string
+	MetaJSON  template.JS
 }
 
 type sequenceDiagramData struct {
@@ -149,15 +159,15 @@ type sequenceDiagramData struct {
 	count int
 }
 
-func (r *sequenceDiagramData) addFunctionInvocation(source string, target string) {
+func (r *sequenceDiagramData) addFunctionInvocation(source, target string) {
 	r.addRecord(source, "->", target)
 }
 
-func (r *sequenceDiagramData) addFunctionReturn(source string, target string) {
+func (r *sequenceDiagramData) addFunctionReturn(source, target string) {
 	r.addRecord(source, "-->", target)
 }
 
-func (r *sequenceDiagramData) addRecord(source string, operation string, target string) {
+func (r *sequenceDiagramData) addRecord(source, operation, target string) {
 	r.count++
 	r.data.WriteString(fmt.Sprintf("%s%s%s: (%d)\n", source, operation, target, r.count))
 }
@@ -167,18 +177,54 @@ func (r *sequenceDiagramData) String() string {
 }
 
 func (v *visualizer) constructTemplateData(events []parser.FuncEvent, maxDepth int, startingFunc string) (templateData, error) {
+	if maxDepth == math.MaxInt32 && len(startingFunc) == 0 {
+		return v.constructTemplateDataGraph(events)
+	}
+	return v.constructTemplateDataLinearly(events, maxDepth, startingFunc)
+}
+
+func (v *visualizer) constructTemplateDataGraph(events []parser.FuncEvent) (templateData, error) {
+	diagramData := &sequenceDiagramData{}
+
+	var tableRows []TableRow
+
+	for i := 0; i < len(events); i++ {
+		event := events[i]
+		switch event := event.(type) {
+		case *parser.InvocationEvent:
+			diagramData.addFunctionInvocation(event.GetCaller(), event.GetCallee())
+			tableRows = append(tableRows, TableRow{
+				Args:   fmt.Sprintf("calling %s", event.Args),
+				CallID: event.GetCallID(),
+			})
+		case *parser.ReturningEvent:
+			diagramData.addFunctionReturn(event.GetCallee(), event.GetCaller())
+			tableRows = append(tableRows, TableRow{
+				Args:   "returning",
+				CallID: event.GetCallID(),
+			})
+		}
+	}
+
+	return templateData{
+		Diagram:   diagramData.String(),
+		TableRows: tableRows,
+	}, nil
+}
+
+func (v *visualizer) constructTemplateDataLinearly(events []parser.FuncEvent, maxDepth int, startingFunc string) (templateData, error) {
 	diagramData := &sequenceDiagramData{}
 
 	if len(startingFunc) > 0 {
 		for i := 0; i < len(events); i++ {
-			if events[i].FuncName() == startingFunc {
+			if _, ok := events[i].(*parser.InvocationEvent); ok && events[i].GetCaller() == startingFunc {
 				events = events[i:]
 				break
 			}
 		}
 
 		for i := 1; i < len(events); i++ {
-			if events[i].FuncName() == startingFunc {
+			if _, ok := events[i].(*parser.ReturningEvent); ok && events[i].GetCaller() == startingFunc {
 				events = events[:i+1]
 				break
 			}
@@ -186,36 +232,47 @@ func (v *visualizer) constructTemplateData(events []parser.FuncEvent, maxDepth i
 	}
 
 	stack := stack(make([]parser.FuncEvent, 0, len(events)))
+	var tableRows []TableRow
 
-	var args []string
+	diagramData.addFunctionInvocation(events[0].GetCaller(), events[0].GetCallee())
+	stack.Push(events[0])
+	tableRows = append(tableRows, TableRow{
+		Args:   fmt.Sprintf("calling %s", events[0].(*parser.InvocationEvent).Args),
+		CallID: events[0].GetCallID(),
+	})
 
-	for i := 0; i < len(events); i++ {
+	for i := 1; i < len(events); i++ {
+		if stack.Empty() {
+			break
+		}
 		event := events[i]
 		switch event := event.(type) {
 		case *parser.InvocationEvent:
 			if stack.Length() < maxDepth {
-				prev := event
-				if !stack.Empty() {
-					prev = stack.Peek().(*parser.InvocationEvent)
+				prev := stack.Peek().(*parser.InvocationEvent)
+				if prev.GetCallee() == event.GetCaller() {
+					diagramData.addFunctionInvocation(event.GetCaller(), event.GetCallee())
+					tableRows = append(tableRows, TableRow{
+						Args:   fmt.Sprintf("calling %s", event.Args),
+						CallID: event.GetCallID(),
+					})
+					stack.Push(event)
 				}
-				diagramData.addFunctionInvocation(prev.Name, event.FuncName())
-				args = append(args, fmt.Sprintf("calling %s", event.Args))
-				stack.Push(event)
 			}
 		case *parser.ReturningEvent:
-			if stack.Peek().FuncName() == event.FuncName() {
-				prev := stack.Pop()
-				if !stack.Empty() {
-					prev = stack.Peek()
-				}
-				diagramData.addFunctionReturn(event.FuncName(), prev.FuncName())
-				args = append(args, "returning")
+			if stack.Peek().GetCallee() == event.GetCallee() {
+				_ = stack.Pop()
+				diagramData.addFunctionReturn(event.GetCallee(), event.GetCaller())
+				tableRows = append(tableRows, TableRow{
+					Args:   "returning",
+					CallID: event.GetCallID(),
+				})
 			}
 		}
 	}
 
 	return templateData{
-		Diagram: diagramData.String(),
-		Args:    args,
+		Diagram:   diagramData.String(),
+		TableRows: tableRows,
 	}, nil
 }

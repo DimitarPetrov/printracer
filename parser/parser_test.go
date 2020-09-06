@@ -7,34 +7,58 @@ import (
 )
 
 func TestParser_Parse(t *testing.T) {
-	input := `Entering function main
-Entering function foo with args (1) (true)
-Entering function bar with args (test string)
-Entering function baz
-Exiting function baz
-Exiting function bar
-Exiting function foo
-Exiting function main`
+	input := `Function main.main called by runtime.main; callID=1d8ca74e-c860-8a75-fc36-fe6d34350f0c
+Function main.foo called by main.main with args (5) (false); callID=973355a9-2ec6-095c-9137-7a1081ac0a5f
+Function main.bar called by main.foo with args (test string); callID=6c294dfd-4c6a-39b1-474e-314bee73f514
+Function main.baz called by main.bar; callID=a019a297-0a6e-a792-0e3f-23c33a44622f
+Exiting function main.baz called by main.bar; callID=a019a297-0a6e-a792-0e3f-23c33a44622f
+Exiting function main.bar called by main.foo; callID=6c294dfd-4c6a-39b1-474e-314bee73f514
+Exiting function main.foo called by main.main; callID=973355a9-2ec6-095c-9137-7a1081ac0a5f
+Exiting function main.main called by runtime.main; callID=1d8ca74e-c860-8a75-fc36-fe6d34350f0c`
 
 	expected := []FuncEvent{
 		&InvocationEvent{
-			Name: "main",
+			Caller: "runtime.main",
+			Callee: "main.main",
+			CallID: "1d8ca74e-c860-8a75-fc36-fe6d34350f0c",
 		},
 		&InvocationEvent{
-			Name: "foo",
-			Args: "with args (1) (true)",
+			Caller: "main.main",
+			Callee: "main.foo",
+			CallID: "973355a9-2ec6-095c-9137-7a1081ac0a5f",
+			Args:   "with args (5) (false)",
 		},
 		&InvocationEvent{
-			Name: "bar",
-			Args: "with args (test string)",
+			Caller: "main.foo",
+			Callee: "main.bar",
+			CallID: "6c294dfd-4c6a-39b1-474e-314bee73f514",
+			Args:   "with args (test string)",
 		},
 		&InvocationEvent{
-			Name: "baz",
+			Caller: "main.bar",
+			Callee: "main.baz",
+			CallID: "a019a297-0a6e-a792-0e3f-23c33a44622f",
 		},
-		&ReturningEvent{Name: "baz"},
-		&ReturningEvent{Name: "bar"},
-		&ReturningEvent{Name: "foo"},
-		&ReturningEvent{Name: "main"},
+		&ReturningEvent{
+			Caller: "main.bar",
+			Callee: "main.baz",
+			CallID: "a019a297-0a6e-a792-0e3f-23c33a44622f",
+		},
+		&ReturningEvent{
+			Caller: "main.foo",
+			Callee: "main.bar",
+			CallID: "6c294dfd-4c6a-39b1-474e-314bee73f514",
+		},
+		&ReturningEvent{
+			Caller: "main.main",
+			Callee: "main.foo",
+			CallID: "973355a9-2ec6-095c-9137-7a1081ac0a5f",
+		},
+		&ReturningEvent{
+			Caller: "runtime.main",
+			Callee: "main.main",
+			CallID: "1d8ca74e-c860-8a75-fc36-fe6d34350f0c",
+		},
 	}
 
 	actual, err := NewParser().Parse(bytes.NewBufferString(input))
