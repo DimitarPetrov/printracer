@@ -56,14 +56,14 @@ var inputEvents = []parser.FuncEvent{
 	},
 }
 
-var fullDiagram = `runtime.main->main.main: (1)
-main.main->main.foo: (2)
-main.foo->main.bar: (3)
-main.bar->main.baz: (4)
-main.baz-->main.bar: (5)
-main.bar-->main.foo: (6)
-main.foo-->main.main: (7)
-main.main-->runtime.main: (8)
+var fullDiagram = `"runtime.main"->"main.main": (1)
+"main.main"->"main.foo": (2)
+"main.foo"->"main.bar": (3)
+"main.bar"->"main.baz": (4)
+"main.baz"-->"main.bar": (5)
+"main.bar"-->"main.foo": (6)
+"main.foo"-->"main.main": (7)
+"main.main"-->"runtime.main": (8)
 `
 var fullTableRows = []TableRow{
 	{Args: "calling ", CallID: "1d8ca74e-c860-8a75-fc36-fe6d34350f0c"},
@@ -76,10 +76,10 @@ var fullTableRows = []TableRow{
 	{Args: "returning", CallID: "1d8ca74e-c860-8a75-fc36-fe6d34350f0c"},
 }
 
-var diagramWith2DepthLimit = `runtime.main->main.main: (1)
-main.main->main.foo: (2)
-main.foo-->main.main: (3)
-main.main-->runtime.main: (4)
+var diagramWith2DepthLimit = `"runtime.main"->"main.main": (1)
+"main.main"->"main.foo": (2)
+"main.foo"-->"main.main": (3)
+"main.main"-->"runtime.main": (4)
 `
 var tableRowsWith2DepthLimit = []TableRow{
 	{Args: "calling ", CallID: "1d8ca74e-c860-8a75-fc36-fe6d34350f0c"},
@@ -88,10 +88,10 @@ var tableRowsWith2DepthLimit = []TableRow{
 	{Args: "returning", CallID: "1d8ca74e-c860-8a75-fc36-fe6d34350f0c"},
 }
 
-var diagramWithFooStartingFunc = `main.foo->main.bar: (1)
-main.bar->main.baz: (2)
-main.baz-->main.bar: (3)
-main.bar-->main.foo: (4)
+var diagramWithFooStartingFunc = `"main.foo"->"main.bar": (1)
+"main.bar"->"main.baz": (2)
+"main.baz"-->"main.bar": (3)
+"main.bar"-->"main.foo": (4)
 `
 var tableRowsWithFooStartingFunc = []TableRow{
 	{Args: "calling with args (test string)", CallID: "6c294dfd-4c6a-39b1-474e-314bee73f514"},
@@ -100,8 +100,8 @@ var tableRowsWithFooStartingFunc = []TableRow{
 	{Args: "returning", CallID: "6c294dfd-4c6a-39b1-474e-314bee73f514"},
 }
 
-var diagramWithFooStartingFuncAnd2DepthLimit = `main.foo->main.bar: (1)
-main.bar-->main.foo: (2)
+var diagramWithFooStartingFuncAnd2DepthLimit = `"main.foo"->"main.bar": (1)
+"main.bar"-->"main.foo": (2)
 `
 var tableRowsWithFooStartingFuncAnd2DepthLimit = []TableRow{
 	{Args: "calling with args (test string)", CallID: "6c294dfd-4c6a-39b1-474e-314bee73f514"},
@@ -146,7 +146,7 @@ func TestVisualize(t *testing.T) {
 		MaxDepth     int
 		StartingFunc string
 		Diagram      string
-		TableRows         []TableRow
+		TableRows    []TableRow
 	}{
 		{Name: "ConstructTemplateData", MaxDepth: math.MaxInt32, Diagram: fullDiagram, TableRows: fullTableRows},
 		{Name: "ConstructTemplateDataWithDepthLimit", MaxDepth: 2, Diagram: diagramWith2DepthLimit, TableRows: tableRowsWith2DepthLimit},
@@ -171,7 +171,7 @@ func TestVisualize(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			encodedDiagram := strings.ReplaceAll(strings.ReplaceAll(test.Diagram, "->", `-\x3e`), "\n", `\n`)
+			encodedDiagram := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(test.Diagram, "->", `-\x3e`), "\n", `\n`), `"`, `\x22`)
 			if !bytes.Contains(html, []byte(encodedDiagram)) {
 				t.Error("Assertion failed! Expected html file to contain diagram data")
 			}

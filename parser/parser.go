@@ -72,14 +72,16 @@ func (p *parser) Parse(in io.Reader) ([]FuncEvent, error) {
 	var events []FuncEvent
 	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
-		halfs := strings.Split(scanner.Text(), ";")
-		callID := strings.Split(halfs[1], "=")[1]
-		msg := halfs[0]
+		row := scanner.Text()
+		lastSemicolon := strings.LastIndex(row, ";")
+		msg := row[:lastSemicolon]
+		secondHalf := row[lastSemicolon+1:]
+		callID := strings.Split(secondHalf, "=")[1]
 		if strings.HasPrefix(msg, "Function") {
 			words := strings.Split(msg, " ")
 			events = append(events, &InvocationEvent{
-				Callee: words[1],
-				Caller: words[4],
+				Callee: normalizeFuncName(words[1]),
+				Caller: normalizeFuncName(words[4]),
 				Args:   strings.Join(words[5:], " "),
 				CallID: callID,
 			})
@@ -88,8 +90,8 @@ func (p *parser) Parse(in io.Reader) ([]FuncEvent, error) {
 		if strings.HasPrefix(msg, "Exiting function") {
 			words := strings.Split(msg, " ")
 			events = append(events, &ReturningEvent{
-				Callee: words[2],
-				Caller: words[5],
+				Callee: normalizeFuncName(words[2]),
+				Caller: normalizeFuncName(words[5]),
 				CallID: callID,
 			})
 		}
@@ -99,4 +101,8 @@ func (p *parser) Parse(in io.Reader) ([]FuncEvent, error) {
 	}
 
 	return events, nil
+}
+
+func normalizeFuncName(funcName string) string {
+	return funcName[strings.LastIndex(funcName, "/")+1:]
 }

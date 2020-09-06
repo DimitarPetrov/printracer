@@ -169,7 +169,7 @@ func (r *sequenceDiagramData) addFunctionReturn(source, target string) {
 
 func (r *sequenceDiagramData) addRecord(source, operation, target string) {
 	r.count++
-	r.data.WriteString(fmt.Sprintf("%s%s%s: (%d)\n", source, operation, target, r.count))
+	r.data.WriteString(fmt.Sprintf("\"%s\"%s\"%s\": (%d)\n", source, operation, target, r.count))
 }
 
 func (r *sequenceDiagramData) String() string {
@@ -216,11 +216,17 @@ func (v *visualizer) constructTemplateDataLinearly(events []parser.FuncEvent, ma
 	diagramData := &sequenceDiagramData{}
 
 	if len(startingFunc) > 0 {
+		found := false
 		for i := 0; i < len(events); i++ {
 			if _, ok := events[i].(*parser.InvocationEvent); ok && events[i].GetCaller() == startingFunc {
 				events = events[i:]
+				found = true
 				break
 			}
+		}
+
+		if !found {
+			return templateData{}, fmt.Errorf("could not find functions called by %s", startingFunc)
 		}
 
 		for i := 1; i < len(events); i++ {
