@@ -12,6 +12,37 @@ import (
 	"os"
 )
 
+const funcNameVarName = "funcName"
+const funcPCVarName = "funcPC"
+
+const callerFuncNameVarName = "caller"
+const defaultCallerName = "unknown"
+const callerFuncPCVarName = "callerPC"
+
+const callIDVarName = "callID"
+
+const printracerCommentWatermark = "/* prinTracer */"
+
+const instrumentationStmtsCount = 9 // Acts like a contract of how many statements instrumentation adds and deinstrumentation removes.
+
+func buildInstrumentationStmts(f *dst.FuncDecl) [instrumentationStmtsCount]dst.Stmt {
+	return [instrumentationStmtsCount]dst.Stmt{
+		newAssignStmt(funcNameVarName, f.Name.Name),
+		newAssignStmt(callerFuncNameVarName, defaultCallerName),
+		newGetFuncNameIfStatement("0", funcPCVarName, funcNameVarName),
+		newGetFuncNameIfStatement("1", callerFuncPCVarName, callerFuncNameVarName),
+		newMakeByteSliceStmt(),
+		newRandReadStmt(),
+		newParseUUIDFromByteSliceStmt(callIDVarName),
+		&dst.ExprStmt{
+			X: newPrintExprWithArgs(buildEnteringFunctionArgs(f)),
+		},
+		&dst.DeferStmt{
+			Call: newPrintExprWithArgs(buildExitFunctionArgs()),
+		},
+	}
+}
+
 type codeInstrumenter struct {
 }
 
@@ -52,6 +83,8 @@ func (ci *codeInstrumenter) InstrumentPackage(fset *token.FileSet, pkg *ast.Pack
 
 func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, out io.Writer) error {
 	astutil.AddImport(fset, file, "fmt")
+	astutil.AddNamedImport(fset, file, "rt", "runtime")
+	astutil.AddImport(fset, file, "crypto/rand")
 
 	// Needed because ast does not support floating comments and deletes them.
 	// In order to preserve all comments we just pre-parse it to dst which treats them as first class citizens.
@@ -63,40 +96,27 @@ func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, 
 	dst.Inspect(f, func(n dst.Node) bool {
 		switch t := n.(type) {
 		case *dst.FuncDecl:
-			var enteringStringFormat = fmt.Sprintf("Entering function %s", t.Name)
-			var exitingStringFormat = fmt.Sprintf("Exiting function %s", t.Name)
+			if !ci.hasInstrumentationWatermark(t) {
+				instrumentationStmts := buildInstrumentationStmts(t)
+				t.Body.List = append(instrumentationStmts[:], t.Body.List...)
 
-			var args []dst.Expr
-
-			if len(t.Type.Params.List) > 0 {
-				enteringStringFormat += " with args"
-
-				for _, param := range t.Type.Params.List {
-					enteringStringFormat += " (%v)"
-					args = append(args, &dst.BasicLit{
-						Kind:  token.STRING,
-						Value: param.Names[0].Name,
-					})
-				}
+				t.Body.List[0].Decorations().Before = dst.EmptyLine
+				t.Body.List[0].Decorations().Start.Append(printracerCommentWatermark)
+				t.Body.List[instrumentationStmtsCount-1].Decorations().After = dst.EmptyLine
+				t.Body.List[instrumentationStmtsCount-1].Decorations().End.Append(printracerCommentWatermark)
 			}
-
-			args = append([]dst.Expr{
-				&dst.BasicLit{
-					Kind:  token.STRING,
-					Value: `"` + enteringStringFormat + `\n"`,
-				},
-			}, args...)
-
-			t.Body.List = append([]dst.Stmt{
-				&dst.ExprStmt{
-					X: newPrintExprWithArgs(args),
-				},
-				&dst.DeferStmt{
-					Call: newPrintExprWithMessage(exitingStringFormat),
-				},
-			}, t.Body.List...)
 		}
 		return true
 	})
 	return decorator.Fprint(out, f)
+}
+
+func (ci *codeInstrumenter) hasInstrumentationWatermark(f *dst.FuncDecl) bool {
+	if len(f.Body.List) > 0 {
+		firstStmntDecorations := f.Body.List[0].Decorations().Start.All()
+		if len(firstStmntDecorations) > 0 && firstStmntDecorations[0] == printracerCommentWatermark {
+			return true
+		}
+	}
+	return false
 }

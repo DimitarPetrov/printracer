@@ -26,11 +26,29 @@ func main() {
 
 const resultCodeWithoutImports = `package a
 
-import "fmt"
+import (
+	"crypto/rand"
+	"fmt"
+	rt "runtime"
+)
 
 func test(i int, b bool) int {
-	fmt.Printf("Entering function test with args (%v) (%v)\n", i, b)
-	defer fmt.Printf("Exiting function test\n")
+
+	/* prinTracer */
+	funcName := "test"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
 	if b {
 		return i
 	}
@@ -38,15 +56,83 @@ func test(i int, b bool) int {
 }
 
 func main() {
-	fmt.Printf("Entering function main\n")
-	defer fmt.Printf("Exiting function main\n")
+
+	/* prinTracer */
+	funcName := "main"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
+	i := test(2, false)
+}
+`
+
+const editedResultCodeWithoutImports = `package a
+
+import (
+	"crypto/rand"
+	"fmt"
+	rt "runtime"
+)
+
+func test(i int, b bool) int {
+
+	/* prinTracer */
+	funcName := "test2"
+	caller := "unknown2"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	fmt.Println("test")
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
+	if b {
+		return i
+	}
+	return 0
+}
+
+func main() {
+
+	funcName := "main"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID)
+
 	i := test(2, false)
 }
 `
 
 const codeWithFmtImport = `package a
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func test(i int, b bool) int {
 	if b {
@@ -62,11 +148,29 @@ func main() {
 `
 const resultCodeWithFmtImport = `package a
 
-import "fmt"
+import (
+	"crypto/rand"
+	"fmt"
+	rt "runtime"
+)
 
 func test(i int, b bool) int {
-	fmt.Printf("Entering function test with args (%v) (%v)\n", i, b)
-	defer fmt.Printf("Exiting function test\n")
+
+	/* prinTracer */
+	funcName := "test"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
 	if b {
 		return i
 	}
@@ -74,8 +178,22 @@ func test(i int, b bool) int {
 }
 
 func main() {
-	fmt.Printf("Entering function main\n")
-	defer fmt.Printf("Exiting function main\n")
+
+	/* prinTracer */
+	funcName := "main"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
 	i := test(2, false)
 	fmt.Println(i)
 }
@@ -104,13 +222,29 @@ func main() {
 const resultCodeWithMultipleImports = `package a
 
 import (
+	"crypto/rand"
 	"fmt"
+	rt "runtime"
 	"strconv"
 )
 
 func test(i int, b bool) int {
-	fmt.Printf("Entering function test with args (%v) (%v)\n", i, b)
-	defer fmt.Printf("Exiting function test\n")
+
+	/* prinTracer */
+	funcName := "test"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
 	if b {
 		return i
 	}
@@ -118,8 +252,22 @@ func test(i int, b bool) int {
 }
 
 func main() {
-	fmt.Printf("Entering function main\n")
-	defer fmt.Printf("Exiting function main\n")
+
+	/* prinTracer */
+	funcName := "main"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
 	i := test(2, false)
 	fmt.Println(strconv.Itoa(i))
 }
@@ -147,13 +295,29 @@ func main() {
 const resultCodeWithImportsWithoutFmt = `package a
 
 import (
+	"crypto/rand"
 	"fmt"
+	rt "runtime"
 	"strconv"
 )
 
 func test(i int, b bool) int {
-	fmt.Printf("Entering function test with args (%v) (%v)\n", i, b)
-	defer fmt.Printf("Exiting function test\n")
+
+	/* prinTracer */
+	funcName := "test"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
 	if b {
 		return i
 	}
@@ -161,10 +325,46 @@ func test(i int, b bool) int {
 }
 
 func main() {
-	fmt.Printf("Entering function main\n")
-	defer fmt.Printf("Exiting function main\n")
+
+	/* prinTracer */
+	funcName := "main"
+	caller := "unknown"
+	if funcPC, _, _, ok := rt.Caller(0); ok {
+		funcName = rt.FuncForPC(funcPC).Name()
+	}
+	if callerPC, _, _, ok := rt.Caller(1); ok {
+		caller = rt.FuncForPC(callerPC).Name()
+	}
+	idBytes := make([]byte, 16)
+	_, _ = rand.Read(idBytes)
+	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
+	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
+
 	i := test(2, false)
 	s := strconv.Itoa(i)
+}
+`
+
+const codeWithWatermarks = `package a
+
+import (
+	"crypto/rand"
+	"fmt"
+	rt "runtime"
+)
+
+func test(i int, b bool) int {
+	/* prinTracer */
+	if b {
+		return i
+	}
+	return 0
+}
+
+func main() {
+	/* prinTracer */
+	i := test(2, false)
 }
 `
 
@@ -177,7 +377,11 @@ type test struct {
 
 const resultCodeWithoutFunction = `package a
 
-import "fmt"
+import (
+	"crypto/rand"
+	"fmt"
+	rt "runtime"
+)
 
 type test struct {
 	a int
@@ -195,6 +399,8 @@ func TestInstrumentFile(t *testing.T) {
 		{Name: "InstrumentFileWithMultipleImports", InputCode: codeWithMultipleImports, OutputCode: resultCodeWithMultipleImports},
 		{Name: "InstrumentFileWithoutFmtImport", InputCode: codeWithImportsWithoutFmt, OutputCode: resultCodeWithImportsWithoutFmt},
 		{Name: "InstrumentFileWithoutFunctions", InputCode: codeWithoutFunction, OutputCode: resultCodeWithoutFunction},
+		{Name: "InstrumentFileDoesNotAffectAlreadyInstrumentedFiles", InputCode: resultCodeWithFmtImport, OutputCode: resultCodeWithFmtImport},
+		{Name: "FunctionsWithWatermarksShouldNotBeInstrumented", InputCode: codeWithWatermarks, OutputCode: codeWithWatermarks},
 	}
 
 	for _, test := range tests {
@@ -210,7 +416,7 @@ func TestInstrumentFile(t *testing.T) {
 			}
 
 			if buff.String() != test.OutputCode {
-				t.Error("Assertion failed!")
+				t.Errorf("Assertion failed! Expected %s got %s", test.OutputCode, buff.String())
 			}
 		})
 	}
@@ -235,6 +441,7 @@ func TestInstrumentDirectory(t *testing.T) {
 		{InputCode: codeWithMultipleImports, OutputCode: resultCodeWithMultipleImports},
 		{InputCode: codeWithImportsWithoutFmt, OutputCode: resultCodeWithImportsWithoutFmt},
 		{InputCode: codeWithoutFunction, OutputCode: resultCodeWithoutFunction},
+		{InputCode: resultCodeWithFmtImport, OutputCode: resultCodeWithFmtImport},
 	}
 
 	i := 0

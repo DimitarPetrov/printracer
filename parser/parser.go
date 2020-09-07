@@ -19,24 +19,46 @@ const (
 )
 
 type FuncEvent interface {
-	FuncName() string
+	GetCaller() string
+	GetCallee() string
+	GetCallID() string
 }
 
 type InvocationEvent struct {
-	Name string
-	Args string
+	Caller string
+	Callee string
+	CallID string
+	Args   string
 }
 
-func (ie *InvocationEvent) FuncName() string {
-	return ie.Name
+func (ie *InvocationEvent) GetCaller() string {
+	return ie.Caller
+}
+
+func (ie *InvocationEvent) GetCallee() string {
+	return ie.Callee
+}
+
+func (ie *InvocationEvent) GetCallID() string {
+	return ie.CallID
 }
 
 type ReturningEvent struct {
-	Name string
+	Caller string
+	Callee string
+	CallID string
 }
 
-func (ie *ReturningEvent) FuncName() string {
-	return ie.Name
+func (re *ReturningEvent) GetCaller() string {
+	return re.Caller
+}
+
+func (re *ReturningEvent) GetCallee() string {
+	return re.Callee
+}
+
+func (re *ReturningEvent) GetCallID() string {
+	return re.CallID
 }
 
 type parser struct {
@@ -51,18 +73,26 @@ func (p *parser) Parse(in io.Reader) ([]FuncEvent, error) {
 	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
 		row := scanner.Text()
-		if strings.HasPrefix(row, "Entering function") {
-			words := strings.Split(row, " ")
+		lastSemicolon := strings.LastIndex(row, ";")
+		msg := row[:lastSemicolon]
+		secondHalf := row[lastSemicolon+1:]
+		callID := strings.Split(secondHalf, "=")[1]
+		if strings.HasPrefix(msg, "Entering function") {
+			words := strings.Split(msg, " ")
 			events = append(events, &InvocationEvent{
-				Name: words[2],
-				Args: strings.Join(words[3:], " "),
+				Callee: normalizeFuncName(words[2]),
+				Caller: normalizeFuncName(words[5]),
+				Args:   strings.Join(words[6:], " "),
+				CallID: callID,
 			})
 		}
 
-		if strings.HasPrefix(row, "Exiting function") {
-			split := strings.Split(row, " ")
+		if strings.HasPrefix(msg, "Exiting function") {
+			words := strings.Split(msg, " ")
 			events = append(events, &ReturningEvent{
-				Name: split[2],
+				Callee: normalizeFuncName(words[2]),
+				Caller: normalizeFuncName(words[5]),
+				CallID: callID,
 			})
 		}
 	}
@@ -71,4 +101,8 @@ func (p *parser) Parse(in io.Reader) ([]FuncEvent, error) {
 	}
 
 	return events, nil
+}
+
+func normalizeFuncName(funcName string) string {
+	return funcName[strings.LastIndex(funcName, "/")+1:]
 }

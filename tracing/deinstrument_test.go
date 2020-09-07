@@ -22,6 +22,7 @@ func TestDeinstrumentFile(t *testing.T) {
 		{Name: "DeinstrumentFileWithoutFmtImport", InputCode: resultCodeWithImportsWithoutFmt, OutputCode: codeWithImportsWithoutFmt},
 		{Name: "DeinstrumentFileWithoutFunctions", InputCode: resultCodeWithoutFunction, OutputCode: codeWithoutFunction},
 		{Name: "DeinstrumentFileWithoutPreviousInstrumentation", InputCode: codeWithMultipleImports, OutputCode: codeWithMultipleImports},
+		{Name: "DeinstrumentFileDoesNotChangeManuallyEditedFunctions", InputCode: editedResultCodeWithoutImports, OutputCode: editedResultCodeWithoutImports},
 	}
 
 	for _, test := range tests {
@@ -42,12 +43,12 @@ func TestDeinstrumentFile(t *testing.T) {
 			}
 
 			var buff2 bytes.Buffer
-			if err := NewImportsGroomer().RemoveUnusedImportFromFile(fset, file, &buff2, "fmt"); err != nil {
+			if err := NewImportsGroomer().RemoveUnusedImportFromFile(fset, file, &buff2, map[string]string{"fmt": "", "runtime": "rt", "crypto/rand": ""}); err != nil {
 				t.Fatal(err)
 			}
 
 			if buff2.String() != test.OutputCode {
-				t.Error("Assertion failed!")
+				t.Errorf("Assertion failed! Expected %s god %s", test.OutputCode, buff2.String())
 			}
 		})
 	}
@@ -72,6 +73,7 @@ func TestDeinstrumentDirectory(t *testing.T) {
 		{InputCode: resultCodeWithMultipleImports, OutputCode: codeWithMultipleImports},
 		{InputCode: resultCodeWithImportsWithoutFmt, OutputCode: codeWithImportsWithoutFmt},
 		{InputCode: resultCodeWithoutFunction, OutputCode: codeWithoutFunction},
+		{InputCode: editedResultCodeWithoutImports, OutputCode: editedResultCodeWithoutImports},
 	}
 
 	i := 0
@@ -86,7 +88,7 @@ func TestDeinstrumentDirectory(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := NewImportsGroomer().RemoveUnusedImportFromDirectory("test", "fmt"); err != nil {
+	if err := NewImportsGroomer().RemoveUnusedImportFromDirectory("test", map[string]string{"fmt": "", "runtime": "rt", "crypto/rand": ""}); err != nil {
 		t.Fatal(err)
 	}
 

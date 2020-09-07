@@ -11,11 +11,11 @@ import (
 )
 
 type FakeImportsGroomer struct {
-	RemoveUnusedImportFromDirectoryStub        func(string, string) error
+	RemoveUnusedImportFromDirectoryStub        func(string, map[string]string) error
 	removeUnusedImportFromDirectoryMutex       sync.RWMutex
 	removeUnusedImportFromDirectoryArgsForCall []struct {
 		arg1 string
-		arg2 string
+		arg2 map[string]string
 	}
 	removeUnusedImportFromDirectoryReturns struct {
 		result1 error
@@ -23,13 +23,13 @@ type FakeImportsGroomer struct {
 	removeUnusedImportFromDirectoryReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RemoveUnusedImportFromFileStub        func(*token.FileSet, *ast.File, io.Writer, string) error
+	RemoveUnusedImportFromFileStub        func(*token.FileSet, *ast.File, io.Writer, map[string]string) error
 	removeUnusedImportFromFileMutex       sync.RWMutex
 	removeUnusedImportFromFileArgsForCall []struct {
 		arg1 *token.FileSet
 		arg2 *ast.File
 		arg3 io.Writer
-		arg4 string
+		arg4 map[string]string
 	}
 	removeUnusedImportFromFileReturns struct {
 		result1 error
@@ -37,12 +37,12 @@ type FakeImportsGroomer struct {
 	removeUnusedImportFromFileReturnsOnCall map[int]struct {
 		result1 error
 	}
-	RemoveUnusedImportFromPackageStub        func(*token.FileSet, *ast.Package, string) error
+	RemoveUnusedImportFromPackageStub        func(*token.FileSet, *ast.Package, map[string]string) error
 	removeUnusedImportFromPackageMutex       sync.RWMutex
 	removeUnusedImportFromPackageArgsForCall []struct {
 		arg1 *token.FileSet
 		arg2 *ast.Package
-		arg3 string
+		arg3 map[string]string
 	}
 	removeUnusedImportFromPackageReturns struct {
 		result1 error
@@ -54,12 +54,12 @@ type FakeImportsGroomer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromDirectory(arg1 string, arg2 string) error {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromDirectory(arg1 string, arg2 map[string]string) error {
 	fake.removeUnusedImportFromDirectoryMutex.Lock()
 	ret, specificReturn := fake.removeUnusedImportFromDirectoryReturnsOnCall[len(fake.removeUnusedImportFromDirectoryArgsForCall)]
 	fake.removeUnusedImportFromDirectoryArgsForCall = append(fake.removeUnusedImportFromDirectoryArgsForCall, struct {
 		arg1 string
-		arg2 string
+		arg2 map[string]string
 	}{arg1, arg2})
 	fake.recordInvocation("RemoveUnusedImportFromDirectory", []interface{}{arg1, arg2})
 	fake.removeUnusedImportFromDirectoryMutex.Unlock()
@@ -79,13 +79,13 @@ func (fake *FakeImportsGroomer) RemoveUnusedImportFromDirectoryCallCount() int {
 	return len(fake.removeUnusedImportFromDirectoryArgsForCall)
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromDirectoryCalls(stub func(string, string) error) {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromDirectoryCalls(stub func(string, map[string]string) error) {
 	fake.removeUnusedImportFromDirectoryMutex.Lock()
 	defer fake.removeUnusedImportFromDirectoryMutex.Unlock()
 	fake.RemoveUnusedImportFromDirectoryStub = stub
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromDirectoryArgsForCall(i int) (string, string) {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromDirectoryArgsForCall(i int) (string, map[string]string) {
 	fake.removeUnusedImportFromDirectoryMutex.RLock()
 	defer fake.removeUnusedImportFromDirectoryMutex.RUnlock()
 	argsForCall := fake.removeUnusedImportFromDirectoryArgsForCall[i]
@@ -115,14 +115,14 @@ func (fake *FakeImportsGroomer) RemoveUnusedImportFromDirectoryReturnsOnCall(i i
 	}{result1}
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromFile(arg1 *token.FileSet, arg2 *ast.File, arg3 io.Writer, arg4 string) error {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromFile(arg1 *token.FileSet, arg2 *ast.File, arg3 io.Writer, arg4 map[string]string) error {
 	fake.removeUnusedImportFromFileMutex.Lock()
 	ret, specificReturn := fake.removeUnusedImportFromFileReturnsOnCall[len(fake.removeUnusedImportFromFileArgsForCall)]
 	fake.removeUnusedImportFromFileArgsForCall = append(fake.removeUnusedImportFromFileArgsForCall, struct {
 		arg1 *token.FileSet
 		arg2 *ast.File
 		arg3 io.Writer
-		arg4 string
+		arg4 map[string]string
 	}{arg1, arg2, arg3, arg4})
 	fake.recordInvocation("RemoveUnusedImportFromFile", []interface{}{arg1, arg2, arg3, arg4})
 	fake.removeUnusedImportFromFileMutex.Unlock()
@@ -142,13 +142,13 @@ func (fake *FakeImportsGroomer) RemoveUnusedImportFromFileCallCount() int {
 	return len(fake.removeUnusedImportFromFileArgsForCall)
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromFileCalls(stub func(*token.FileSet, *ast.File, io.Writer, string) error) {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromFileCalls(stub func(*token.FileSet, *ast.File, io.Writer, map[string]string) error) {
 	fake.removeUnusedImportFromFileMutex.Lock()
 	defer fake.removeUnusedImportFromFileMutex.Unlock()
 	fake.RemoveUnusedImportFromFileStub = stub
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromFileArgsForCall(i int) (*token.FileSet, *ast.File, io.Writer, string) {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromFileArgsForCall(i int) (*token.FileSet, *ast.File, io.Writer, map[string]string) {
 	fake.removeUnusedImportFromFileMutex.RLock()
 	defer fake.removeUnusedImportFromFileMutex.RUnlock()
 	argsForCall := fake.removeUnusedImportFromFileArgsForCall[i]
@@ -178,13 +178,13 @@ func (fake *FakeImportsGroomer) RemoveUnusedImportFromFileReturnsOnCall(i int, r
 	}{result1}
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromPackage(arg1 *token.FileSet, arg2 *ast.Package, arg3 string) error {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromPackage(arg1 *token.FileSet, arg2 *ast.Package, arg3 map[string]string) error {
 	fake.removeUnusedImportFromPackageMutex.Lock()
 	ret, specificReturn := fake.removeUnusedImportFromPackageReturnsOnCall[len(fake.removeUnusedImportFromPackageArgsForCall)]
 	fake.removeUnusedImportFromPackageArgsForCall = append(fake.removeUnusedImportFromPackageArgsForCall, struct {
 		arg1 *token.FileSet
 		arg2 *ast.Package
-		arg3 string
+		arg3 map[string]string
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("RemoveUnusedImportFromPackage", []interface{}{arg1, arg2, arg3})
 	fake.removeUnusedImportFromPackageMutex.Unlock()
@@ -204,13 +204,13 @@ func (fake *FakeImportsGroomer) RemoveUnusedImportFromPackageCallCount() int {
 	return len(fake.removeUnusedImportFromPackageArgsForCall)
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromPackageCalls(stub func(*token.FileSet, *ast.Package, string) error) {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromPackageCalls(stub func(*token.FileSet, *ast.Package, map[string]string) error) {
 	fake.removeUnusedImportFromPackageMutex.Lock()
 	defer fake.removeUnusedImportFromPackageMutex.Unlock()
 	fake.RemoveUnusedImportFromPackageStub = stub
 }
 
-func (fake *FakeImportsGroomer) RemoveUnusedImportFromPackageArgsForCall(i int) (*token.FileSet, *ast.Package, string) {
+func (fake *FakeImportsGroomer) RemoveUnusedImportFromPackageArgsForCall(i int) (*token.FileSet, *ast.Package, map[string]string) {
 	fake.removeUnusedImportFromPackageMutex.RLock()
 	defer fake.removeUnusedImportFromPackageMutex.RUnlock()
 	argsForCall := fake.removeUnusedImportFromPackageArgsForCall[i]

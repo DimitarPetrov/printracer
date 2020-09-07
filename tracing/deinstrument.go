@@ -9,7 +9,7 @@ import (
 	"go/token"
 	"io"
 	"os"
-	"strings"
+	"reflect"
 )
 
 type codeDeinstrumenter struct {
@@ -60,28 +60,16 @@ func (cd *codeDeinstrumenter) DeinstrumentFile(fset *token.FileSet, file *ast.Fi
 	dst.Inspect(f, func(n dst.Node) bool {
 		switch t := n.(type) {
 		case *dst.FuncDecl:
-			if len(t.Body.List) > 1 {
-				stmt1, ok1 := t.Body.List[0].(*dst.ExprStmt)
-				stmt2, ok2 := t.Body.List[1].(*dst.DeferStmt)
-				if ok1 && ok2 {
-					expr1, ok := stmt1.X.(*dst.CallExpr)
-					if ok {
-						selExpr1, ok1 := expr1.Fun.(*dst.SelectorExpr)
-						selExpr2, ok2 := stmt2.Call.Fun.(*dst.SelectorExpr)
-						if ok1 && ok2 {
-							package1, ok1 := selExpr1.X.(*dst.Ident)
-							package2, ok2 := selExpr2.X.(*dst.Ident)
-							if ok1 && ok2 && package1.Name == "fmt" && package2.Name == "fmt" &&
-								selExpr1.Sel.Name == "Printf" && selExpr2.Sel.Name == "Printf" {
+			if len(t.Body.List) >= instrumentationStmtsCount {
+				firstStmntDecorations := t.Body.List[0].Decorations().Start.All()
+				secondStmntDecorations := t.Body.List[instrumentationStmtsCount-1].Decorations().End.All()
+				if len(firstStmntDecorations) > 0 && firstStmntDecorations[0] == printracerCommentWatermark &&
+					len(secondStmntDecorations) > 0 && secondStmntDecorations[0] == printracerCommentWatermark {
 
-								expr1Arg, ok1 := expr1.Args[0].(*dst.BasicLit)
-								expr2Arg, ok2 := stmt2.Call.Args[0].(*dst.BasicLit)
-								if ok1 && ok2 && expr1Arg.Kind == token.STRING && expr2Arg.Kind == token.STRING &&
-									strings.Contains(expr1Arg.Value, fmt.Sprintf("Entering function %s", t.Name)) &&
-									strings.Contains(expr2Arg.Value, fmt.Sprintf("Exiting function %s", t.Name)) {
-									t.Body.List = t.Body.List[2:]
-								}
-							}
+					if checkInstrumentationStatementsIntegrity(t) {
+						t.Body.List = t.Body.List[instrumentationStmtsCount:]
+						if len(t.Body.List) > 0 {
+							t.Body.List[0].Decorations().Before = dst.None
 						}
 					}
 				}
@@ -91,4 +79,133 @@ func (cd *codeDeinstrumenter) DeinstrumentFile(fset *token.FileSet, file *ast.Fi
 	})
 
 	return decorator.Fprint(out, f)
+}
+
+func checkInstrumentationStatementsIntegrity(f *dst.FuncDecl) bool {
+	stmts := f.Body.List
+	instrumentationStmts := buildInstrumentationStmts(f)
+
+	for i := 0; i < instrumentationStmtsCount; i++ {
+		if !equalStmt(stmts[i], instrumentationStmts[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func equalStmt(stmt1, stmt2 dst.Stmt) bool {
+	switch t := stmt1.(type) {
+	case *dst.AssignStmt:
+		instStmt, ok := stmt2.(*dst.AssignStmt)
+		if !ok {
+			return false
+		}
+		if !(equalExprSlice(t.Lhs, instStmt.Lhs) && equalExprSlice(t.Rhs, instStmt.Rhs) && reflect.DeepEqual(t.Tok, instStmt.Tok)) {
+			return false
+		}
+		return true
+	case *dst.IfStmt:
+		instStmt, ok := stmt2.(*dst.IfStmt)
+		if !ok {
+			return false
+		}
+		if !(equalStmt(t.Init, instStmt.Init) && equalExpr(t.Cond, instStmt.Cond) && equalStmt(t.Body, instStmt.Body) && equalStmt(t.Else, instStmt.Else)) {
+			return false
+		}
+		return true
+	case *dst.ExprStmt:
+		instStmt, ok := stmt2.(*dst.ExprStmt)
+		if !ok {
+			return false
+		}
+		if !(equalExpr(t.X, instStmt.X)) {
+			return false
+		}
+		return true
+	case *dst.DeferStmt:
+		instStmt, ok := stmt2.(*dst.DeferStmt)
+		if !ok {
+			return false
+		}
+		if !(equalExpr(t.Call, instStmt.Call)) {
+			return false
+		}
+		return true
+	case *dst.BlockStmt:
+		instStmt, ok := stmt2.(*dst.BlockStmt)
+		if !ok {
+			return false
+		}
+		if len(t.List) != len(instStmt.List) || t.RbraceHasNoPos != instStmt.RbraceHasNoPos {
+			return false
+		}
+		for i, stmt1 := range t.List {
+			if !equalStmt(stmt1, instStmt.List[i]) {
+				return false
+			}
+		}
+		return true
+	}
+	return reflect.DeepEqual(stmt1, stmt2)
+}
+
+func equalExprSlice(exprSlice1, exprSlice2 []dst.Expr) bool {
+	if len(exprSlice1) != len(exprSlice2) {
+		return false
+	}
+	for i, expr1 := range exprSlice1 {
+		if !equalExpr(expr1, exprSlice2[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func equalExpr(expr1, expr2 dst.Expr) bool {
+	switch t := expr1.(type) {
+	case *dst.Ident:
+		instExpr, ok := expr2.(*dst.Ident)
+		if !ok {
+			instExpr, ok := expr2.(*dst.BasicLit)
+			if !ok {
+				return false
+			}
+			return t.Name == instExpr.Value
+		}
+		return t.Name == instExpr.Name && t.Path == instExpr.Path
+	case *dst.CallExpr:
+		instExpr, ok := expr2.(*dst.CallExpr)
+		if !ok {
+			return false
+		}
+		if !(equalExprSlice(t.Args, instExpr.Args) && equalExpr(t.Fun, instExpr.Fun)) {
+			return false
+		}
+		return true
+	case *dst.SelectorExpr:
+		instExpr, ok := expr2.(*dst.SelectorExpr)
+		if !ok {
+			return false
+		}
+		if !(equalExpr(t.X, instExpr.X) && equalExpr(t.Sel, instExpr.Sel)) {
+			return false
+		}
+		return true
+	case *dst.SliceExpr:
+		instExpr, ok := expr2.(*dst.SliceExpr)
+		if !ok {
+			return false
+		}
+		if !(t.Slice3 == instExpr.Slice3 && equalExpr(t.X, instExpr.X) && equalExpr(t.High, instExpr.High) && equalExpr(t.Low, instExpr.Low) && equalExpr(t.Max, instExpr.Max)) {
+			return false
+		}
+		return true
+	case *dst.BasicLit:
+		instExpr, ok := expr2.(*dst.BasicLit)
+		if !ok {
+			return false
+		}
+		return t.Value == instExpr.Value && t.Kind == instExpr.Kind
+	}
+	return reflect.DeepEqual(expr1, expr2)
 }
