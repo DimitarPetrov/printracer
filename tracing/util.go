@@ -39,16 +39,6 @@ func generatedFilter(path string, info os.FileInfo) bool {
 	return true
 }
 
-// Returns dst expresion like: fmt.Printf("msg\n")
-func newPrintExprWithMessage(msg string) *dst.CallExpr {
-	return newPrintExprWithArgs([]dst.Expr{
-		&dst.BasicLit{
-			Kind:  token.STRING,
-			Value: `"` + msg + `\n"`,
-		},
-	})
-}
-
 // Return dst expresion like: fmt.Printf(args...)
 func newPrintExprWithArgs(args []dst.Expr) *dst.CallExpr {
 	return &dst.CallExpr{

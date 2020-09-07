@@ -39,8 +39,8 @@ func (vc *VisualizeCmd) Prepare() *cobra.Command {
 	}
 
 	result.Flags().StringVarP(&vc.outputFile, "output", "o", "calls", "name of the resulting html file when visualizing")
-	result.Flags().IntVarP(&vc.maxDepth, "depth", "d", math.MaxInt32, "maximum depth in call graph")
-	result.Flags().StringVarP(&vc.startingFunc, "func", "f", "", "name of the starting function in the visualization (the root of the diagram)")
+	result.Flags().IntVarP(&vc.maxDepth, "depth", "d", math.MaxInt32, "maximum depth in call graph. NOTE: If used visualization will be linear following the call stack of the starting func. Calls from different Goroutines will be ignored!")
+	result.Flags().StringVarP(&vc.startingFunc, "func", "f", "", "name of the starting function in the visualization (the root of the diagram). NOTE: If used visualization will be linear following the call stack of the starting func. Calls from different Goroutines will be ignored!")
 	return result
 }
 
