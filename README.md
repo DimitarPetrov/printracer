@@ -138,7 +138,7 @@ A file with name `calls.html` will be generated
 
 > NOTE: The name of the file can be provided via -o (--output) flag to the visualize command.
 
-![Example 1](examples/example1.png)
+<img src="examples/example1.png" width="1000">
 
 But in some situation this diagram can become so big that it becomes useless.
 
@@ -155,7 +155,7 @@ printracer visualize trace.txt --depth 2 --func main.foo
 ```
 A diagram like this will be generated for you:
 
-![Example 2](examples/example2.png)
+<img src="examples/example2.png" width="1000">
 
 Much cleaner and focused on the let's say problematic part of the trace.
 
