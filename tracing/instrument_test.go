@@ -46,7 +46,7 @@ func test(i int, b bool) int {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	if b {
@@ -69,7 +69,7 @@ func main() {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s; callID=%s\n", funcName, caller, callID)
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	i := test(2, false)
@@ -99,7 +99,7 @@ func test(i int, b bool) int {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	if b {
@@ -121,7 +121,7 @@ func main() {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s; callID=%s\n", funcName, caller, callID)
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID)
 
 	i := test(2, false)
@@ -168,7 +168,7 @@ func test(i int, b bool) int {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	if b {
@@ -191,7 +191,7 @@ func main() {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s; callID=%s\n", funcName, caller, callID)
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	i := test(2, false)
@@ -242,7 +242,7 @@ func test(i int, b bool) int {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	if b {
@@ -265,7 +265,7 @@ func main() {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s; callID=%s\n", funcName, caller, callID)
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	i := test(2, false)
@@ -315,7 +315,7 @@ func test(i int, b bool) int {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	if b {
@@ -338,7 +338,7 @@ func main() {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s; callID=%s\n", funcName, caller, callID)
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	i := test(2, false)

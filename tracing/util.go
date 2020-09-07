@@ -51,7 +51,7 @@ func newPrintExprWithArgs(args []dst.Expr) *dst.CallExpr {
 }
 
 func buildEnteringFunctionArgs(f *dst.FuncDecl) []dst.Expr {
-	var enteringStringFormat = "Function %s called by %s"
+	var enteringStringFormat = "Entering function %s called by %s"
 	args := []dst.Expr{
 		&dst.BasicLit{
 			Kind:  token.STRING,

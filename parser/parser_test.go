@@ -7,10 +7,10 @@ import (
 )
 
 func TestParser_Parse(t *testing.T) {
-	input := `Function main.main called by runtime.main; callID=1d8ca74e-c860-8a75-fc36-fe6d34350f0c
-Function main.foo called by main.main with args (5) (false); callID=973355a9-2ec6-095c-9137-7a1081ac0a5f
-Function main.bar called by main.foo with args (test string); callID=6c294dfd-4c6a-39b1-474e-314bee73f514
-Function main.baz called by main.bar; callID=a019a297-0a6e-a792-0e3f-23c33a44622f
+	input := `Entering function main.main called by runtime.main; callID=1d8ca74e-c860-8a75-fc36-fe6d34350f0c
+Entering function main.foo called by main.main with args (5) (false); callID=973355a9-2ec6-095c-9137-7a1081ac0a5f
+Entering function main.bar called by main.foo with args (test string); callID=6c294dfd-4c6a-39b1-474e-314bee73f514
+Entering function main.baz called by main.bar; callID=a019a297-0a6e-a792-0e3f-23c33a44622f
 Exiting function main.baz called by main.bar; callID=a019a297-0a6e-a792-0e3f-23c33a44622f
 Exiting function main.bar called by main.foo; callID=6c294dfd-4c6a-39b1-474e-314bee73f514
 Exiting function main.foo called by main.main; callID=973355a9-2ec6-095c-9137-7a1081ac0a5f

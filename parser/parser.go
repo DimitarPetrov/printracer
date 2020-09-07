@@ -77,12 +77,12 @@ func (p *parser) Parse(in io.Reader) ([]FuncEvent, error) {
 		msg := row[:lastSemicolon]
 		secondHalf := row[lastSemicolon+1:]
 		callID := strings.Split(secondHalf, "=")[1]
-		if strings.HasPrefix(msg, "Function") {
+		if strings.HasPrefix(msg, "Entering function") {
 			words := strings.Split(msg, " ")
 			events = append(events, &InvocationEvent{
-				Callee: normalizeFuncName(words[1]),
-				Caller: normalizeFuncName(words[4]),
-				Args:   strings.Join(words[5:], " "),
+				Callee: normalizeFuncName(words[2]),
+				Caller: normalizeFuncName(words[5]),
+				Args:   strings.Join(words[6:], " "),
 				CallID: callID,
 			})
 		}

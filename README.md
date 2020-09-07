@@ -65,7 +65,7 @@ func test(i int, b bool) int {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
+	fmt.Printf("Entering function %s called by %s with args (%v) (%v); callID=%s\n", funcName, caller, i, b, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	if b {
@@ -88,7 +88,7 @@ func main() {
 	idBytes := make([]byte, 16)
 	_, _ = rand.Read(idBytes)
 	callID := fmt.Sprintf("%x-%x-%x-%x-%x", idBytes[0:4], idBytes[4:6], idBytes[6:8], idBytes[8:10], idBytes[10:])
-	fmt.Printf("Function %s called by %s; callID=%s\n", funcName, caller, callID)
+	fmt.Printf("Entering function %s called by %s; callID=%s\n", funcName, caller, callID)
 	defer fmt.Printf("Exiting function %s called by %s; callID=%s\n", funcName, caller, callID) /* prinTracer */
 
 	_ = test(2, false)
@@ -96,8 +96,8 @@ func main() {
 ```
 When running the instrumented file above the output (so called trace) will be as follows:
 ```
-Function main.main called by runtime.main; callID=0308fc13-5b30-5871-9101-b84e055a9565
-Function main.test called by main.main with args (2) (false); callID=1a3feff5-844b-039c-6d20-307d52002ce8
+Entering function main.main called by runtime.main; callID=0308fc13-5b30-5871-9101-b84e055a9565
+Entering function main.test called by main.main with args (2) (false); callID=1a3feff5-844b-039c-6d20-307d52002ce8
 Exiting function main.test called by main.main; callID=1a3feff5-844b-039c-6d20-307d52002ce8
 Exiting function main.main called by runtime.main; callID=0308fc13-5b30-5871-9101-b84e055a9565
 ```
@@ -118,10 +118,10 @@ That's where visualization comes to rescue.
 
 For example let's say you have captured the following trace and saved it to the file **trace.txt**:
 ```text
-Function main.main called by runtime.main; callID=ec57b80b-6898-75cc-1dea-e623e7ac26c9
-Function main.foo called by main.main with args (5) (false); callID=351b3edb-7ad3-2f88-1a9b-488debf800cc
-Function main.bar called by main.foo with args (test string); callID=1e3e0e73-e4f1-b3f9-6bf5-e0aa15ddd6d1
-Function main.baz called by main.bar; callID=e1e79e3b-d89f-6e4e-e0bf-eea54db5b569
+Entering function main.main called by runtime.main; callID=ec57b80b-6898-75cc-1dea-e623e7ac26c9
+Entering function main.foo called by main.main with args (5) (false); callID=351b3edb-7ad3-2f88-1a9b-488debf800cc
+Entering function main.bar called by main.foo with args (test string); callID=1e3e0e73-e4f1-b3f9-6bf5-e0aa15ddd6d1
+Entering function main.baz called by main.bar; callID=e1e79e3b-d89f-6e4e-e0bf-eea54db5b569
 Exiting function main.baz called by main.bar; callID=e1e79e3b-d89f-6e4e-e0bf-eea54db5b569
 Exiting function main.bar called by main.foo; callID=1e3e0e73-e4f1-b3f9-6bf5-e0aa15ddd6d1
 Exiting function main.foo called by main.main; callID=351b3edb-7ad3-2f88-1a9b-488debf800cc
