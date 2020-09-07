@@ -346,6 +346,28 @@ func main() {
 }
 `
 
+const codeWithWatermarks = `package a
+
+import (
+	"crypto/rand"
+	"fmt"
+	rt "runtime"
+)
+
+func test(i int, b bool) int {
+	/* prinTracer */
+	if b {
+		return i
+	}
+	return 0
+}
+
+func main() {
+	/* prinTracer */
+	i := test(2, false)
+}
+`
+
 const codeWithoutFunction = `package a
 
 type test struct {
@@ -377,6 +399,8 @@ func TestInstrumentFile(t *testing.T) {
 		{Name: "InstrumentFileWithMultipleImports", InputCode: codeWithMultipleImports, OutputCode: resultCodeWithMultipleImports},
 		{Name: "InstrumentFileWithoutFmtImport", InputCode: codeWithImportsWithoutFmt, OutputCode: resultCodeWithImportsWithoutFmt},
 		{Name: "InstrumentFileWithoutFunctions", InputCode: codeWithoutFunction, OutputCode: resultCodeWithoutFunction},
+		{Name: "InstrumentFileDoesNotAffectAlreadyInstrumentedFiles", InputCode: resultCodeWithFmtImport, OutputCode: resultCodeWithFmtImport},
+		{Name: "FunctionsWithWatermarksShouldNotBeInstrumented", InputCode: codeWithWatermarks, OutputCode: codeWithWatermarks},
 	}
 
 	for _, test := range tests {
@@ -417,6 +441,7 @@ func TestInstrumentDirectory(t *testing.T) {
 		{InputCode: codeWithMultipleImports, OutputCode: resultCodeWithMultipleImports},
 		{InputCode: codeWithImportsWithoutFmt, OutputCode: resultCodeWithImportsWithoutFmt},
 		{InputCode: codeWithoutFunction, OutputCode: resultCodeWithoutFunction},
+		{InputCode: resultCodeWithFmtImport, OutputCode: resultCodeWithFmtImport},
 	}
 
 	i := 0

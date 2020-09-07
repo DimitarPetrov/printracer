@@ -106,6 +106,10 @@ You can also easily revert all the changes done by `printracer` by just executin
 printracer revert
 ```
 
+> NOTE: `printracer revert` reverts changes only if code block enclosed by /* prinTracer */ comment is not modified by hand. If you modify the instrumentation block then it should be manually reverted afterwards. 
+
+> NOTE: `printracer apply` will not apply any changes if find /* prinTracer */ comment directly above first statement if the function. This is needed to mitigate accidental multiple instrumentation which will then affect deinstrumentation and visualization negatively.
+You also can use it to signal that a particular function should not be instrumented.
 ### Visualization
 
 Let's say you have instrumented your code and captured the flow that is so hard to follow even the textual trace is confusing as hell.

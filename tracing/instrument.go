@@ -96,15 +96,27 @@ func (ci *codeInstrumenter) InstrumentFile(fset *token.FileSet, file *ast.File, 
 	dst.Inspect(f, func(n dst.Node) bool {
 		switch t := n.(type) {
 		case *dst.FuncDecl:
-			instrumentationStmts := buildInstrumentationStmts(t)
-			t.Body.List = append(instrumentationStmts[:], t.Body.List...)
+			if !ci.hasInstrumentationWatermark(t) {
+				instrumentationStmts := buildInstrumentationStmts(t)
+				t.Body.List = append(instrumentationStmts[:], t.Body.List...)
 
-			t.Body.List[0].Decorations().Before = dst.EmptyLine
-			t.Body.List[0].Decorations().Start.Append(printracerCommentWatermark)
-			t.Body.List[instrumentationStmtsCount-1].Decorations().After = dst.EmptyLine
-			t.Body.List[instrumentationStmtsCount-1].Decorations().End.Append(printracerCommentWatermark)
+				t.Body.List[0].Decorations().Before = dst.EmptyLine
+				t.Body.List[0].Decorations().Start.Append(printracerCommentWatermark)
+				t.Body.List[instrumentationStmtsCount-1].Decorations().After = dst.EmptyLine
+				t.Body.List[instrumentationStmtsCount-1].Decorations().End.Append(printracerCommentWatermark)
+			}
 		}
 		return true
 	})
 	return decorator.Fprint(out, f)
+}
+
+func (ci *codeInstrumenter) hasInstrumentationWatermark(f *dst.FuncDecl) bool {
+	if len(f.Body.List) > 0 {
+		firstStmntDecorations := f.Body.List[0].Decorations().Start.All()
+		if len(firstStmntDecorations) > 0 && firstStmntDecorations[0] == printracerCommentWatermark {
+			return true
+		}
+	}
+	return false
 }

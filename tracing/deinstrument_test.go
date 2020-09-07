@@ -73,6 +73,7 @@ func TestDeinstrumentDirectory(t *testing.T) {
 		{InputCode: resultCodeWithMultipleImports, OutputCode: codeWithMultipleImports},
 		{InputCode: resultCodeWithImportsWithoutFmt, OutputCode: codeWithImportsWithoutFmt},
 		{InputCode: resultCodeWithoutFunction, OutputCode: codeWithoutFunction},
+		{InputCode: editedResultCodeWithoutImports, OutputCode: editedResultCodeWithoutImports},
 	}
 
 	i := 0
